@@ -2,6 +2,10 @@ import ROOT as R
 import math as M
 import argparse
 import subprocess
+import os
+
+# usage: e.g. 
+#               python drawETLPerformance2.py --inputDir=/eos/user/b/btannenw/MTD/10_4_0_mtd3_runHitsRelValMinBias14TeVnoPU-v1V7_r2/190123_041856/0000/ --pattern='DumpHits_10.*' --output=dpg_01-30-19/minBias14TeV_noPU_v4.root --layout=barzflat
 
 def goodTrack(evt, itrack , chi2cut):
     #acceptance cuts
@@ -33,7 +37,9 @@ parser.add_argument('--dumpAll',dest='dumpAll',action='store_true',default=False
 
 args = parser.parse_args()
 
-if (args.inputDir != ""):
+print args.inputDir 
+
+if (args.inputDir != "" and args.inputDir!=None):
     print args.inputDir
     dh=R.TChain("DumpHits")
     files = []
@@ -49,8 +55,9 @@ if (args.inputDir != ""):
         dh.Add(file)
 else:
     print('>> Opening: '+args.input)
-    f=R.TFile(args.input)
+    f=R.TFile.Open(args.input)
     dh=f.Get("DumpHits")
+    print dh.GetEntries()
 
 histos = {}
 
@@ -526,6 +533,11 @@ histos["effMtd_pt"]= R.TGraphAsymmErrors(histos["mtdTrack_pt"],histos["track_pt"
 histos["effMtd_eta"]=R.TGraphAsymmErrors(histos["mtdTrack_eta"],histos["track_eta"])
 histos["effMtd_eta_lowPt"]=R.TGraphAsymmErrors(histos["mtdTrack_eta_lowPt"],histos["track_eta_lowPt"])
 histos["effMtd_phi"]=R.TGraphAsymmErrors(histos["mtdTrack_phi"],histos["track_phi"])
+
+#Check to see if output directory exists. if not, create it
+outputDir = args.output.split('/')[0]
+if (not os.path.exists("./"+outputDir)):
+    os.system("mkdir "+outputDir)
 
 fOut=R.TFile(args.output,"RECREATE")
 for hn, histo in histos.iteritems():

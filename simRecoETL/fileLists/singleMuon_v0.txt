@@ -1,0 +1,5 @@
+root://cmseos.fnal.gov//store/user/benjtann/RelValSingleMuFlatPt_0p7to10_pythia8/10_4_0_mtd3_runHitsRelValSingleMuFlatPt0p7to10noPU-v2V7_r2/190123_035425/0000/DumpHits_1.root
+root://cmseos.fnal.gov//store/user/benjtann/RelValSingleMuFlatPt_0p7to10_pythia8/10_4_0_mtd3_runHitsRelValSingleMuFlatPt0p7to10noPU-v2V7_r2/190123_035425/0000/DumpHits_2.root
+root://cmseos.fnal.gov//store/user/benjtann/RelValSingleMuFlatPt_0p7to10_pythia8/10_4_0_mtd3_runHitsRelValSingleMuFlatPt0p7to10noPU-v2V7_r2/190123_035425/0000/DumpHits_3.root
+root://cmseos.fnal.gov//store/user/benjtann/RelValSingleMuFlatPt_0p7to10_pythia8/10_4_0_mtd3_runHitsRelValSingleMuFlatPt0p7to10noPU-v2V7_r2/190123_035425/0000/DumpHits_4.root
+root://cmseos.fnal.gov//store/user/benjtann/RelValSingleMuFlatPt_0p7to10_pythia8/10_4_0_mtd3_runHitsRelValSingleMuFlatPt0p7to10noPU-v2V7_r2/190123_035425/0000/DumpHits_5.root

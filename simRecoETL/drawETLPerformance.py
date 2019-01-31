@@ -115,12 +115,12 @@ for det in ["BTL","ETL"]:
     histos["track_pt_at"+det]=R.TH1F("track_pt_at"+det,"track_pt_at"+det,30,0.,10)
     histos["track_pt_at"+det+"_overThreshE"]=R.TH1F("track_pt_at"+det+"_overThreshE","track_pt_at"+det+"_overThreshE",30,0.,10)
     # Fig 1.7
-    maxE = 50 if det == 'BTL' else 0.5
-    histos["recHit_energy_dR05_withTrack"+det]=R.TH1F("recHit_energy_dR05_withTrack"+det,"recHit_energy_dR05_withTrack"+det,50,0.,maxE)
-    histos["recHit_energy_dR05_withTrack"+det+"_fixedRange"]=R.TH1F("recHit_energy_dR05_withTrack"+det+"_fixedRange","recHit_energy_dR05_withTrack"+det+"_fixedRange",50,0.,5)
-    maxHitE = 19 if det == 'BTL' else 3
-    histos["recHit_maxEnergy_withTrack"+det]=R.TH1F("recHit_maxEnergy_withTrack"+det,"recHit_maxEnergy_withTrack"+det,120,0.,maxHitE)
-    histos["recHit_maxEnergy_dRpass_withTrack"+det]=R.TH1F("recHit_maxEnergy_dRpass_withTrack"+det,"recHit_maxEnergy_dRpass_withTrack"+det,120,0.,maxHitE)
+    maxE = 50 if det == 'BTL' else 0.75
+    histos["recHit_energy_dR05_withTrack"+det]=R.TH1F("recHit_energy_dR05_withTrack"+det,"recHit_energy_dR05_withTrack"+det,int(maxE*10),0.,maxE)
+    histos["recHit_energy_dR05_withTrack"+det+"_fixedRange"]=R.TH1F("recHit_energy_dR05_withTrack"+det+"_fixedRange","recHit_energy_dR05_withTrack"+det+"_fixedRange",int(maxE*10),0.,5)
+    maxHitE = 19 if det == 'BTL' else 2.5
+    histos["recHit_maxEnergy_withTrack"+det]=R.TH1F("recHit_maxEnergy_withTrack"+det,"recHit_maxEnergy_withTrack"+det,125,0.,maxHitE)
+    histos["recHit_maxEnergy_dRpass_withTrack"+det]=R.TH1F("recHit_maxEnergy_dRpass_withTrack"+det,"recHit_maxEnergy_dRpass_withTrack"+det,125,0.,maxHitE)
     
     # Fig. Occupancy
     maxE = 10 if det == 'BTL' else 3.0
@@ -296,8 +296,8 @@ for ievent,event in enumerate(dh):
             ):
 
 
-            emptyModulesPerETLRing = list(modulesPerETLRing)
-
+            emptyModulesPerETLRing = list(2*nMod for nMod in modulesPerETLRing) # need to double modules since combining +z and -z discs
+            
             threshold_depositE = 0.03 # MeV
             recHit_matched_totalE_ETL = 0 
             maxRecHitEnergy = 0
@@ -522,9 +522,9 @@ for det in ["BTL","ETL"]:
     histos[det+"effBestRecHit_phi"]=R.TGraphAsymmErrors(histos[det+"matchedBestRecHitTrack_phi"],histos[det+"track_phi"])
 
     #BBT
-    histos["track_pt_at"+det]=R.TGraphAsymmErrors( histos["track_pt_at"+det+"_overThreshE"], histos["track_pt_at"+det])
-    histos["track_eta_at"+det]=R.TGraphAsymmErrors( histos["track_eta_at"+det+"_overThreshE"], histos["track_eta_at"+det])
-    histos["track_phi_at"+det]=R.TGraphAsymmErrors( histos["track_phi_at"+det+"_overThreshE"], histos["track_phi_at"+det])
+    histos["track_pt_at"+det+"_graph"]=R.TGraphAsymmErrors( histos["track_pt_at"+det+"_overThreshE"], histos["track_pt_at"+det])
+    histos["track_eta_at"+det+"_graph"]=R.TGraphAsymmErrors( histos["track_eta_at"+det+"_overThreshE"], histos["track_eta_at"+det])
+    histos["track_phi_at"+det+"_graph"]=R.TGraphAsymmErrors( histos["track_phi_at"+det+"_overThreshE"], histos["track_phi_at"+det])
 
     # still BBT, but occupancy stuff now
     for bin in range(0, histos["recHit_energy_allHitsAllRings_"+det].GetXaxis().GetNbins()):        

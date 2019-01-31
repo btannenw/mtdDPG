@@ -107,11 +107,11 @@ void compareThreePlots(TCanvas* c0, TH1D *h_singleMu, TH1D *h_singlePi, TH1D *h_
   addOverflow(h_minBias);
 
   h_singlePi->SetLineColor(kRed);
-  h_singlePi->SetLineWidth(2);
+  h_singlePi->SetLineWidth(3);
   h_singleMu->SetLineColor(kBlue);
-  h_singleMu->SetLineWidth(2);
+  h_singleMu->SetLineWidth(3);
   h_minBias->SetLineColor(kBlack);
-  h_minBias->SetLineWidth(2);
+  h_minBias->SetLineWidth(3);
 
 
   h_singleMu->GetYaxis()->SetTitle( yname.c_str() );
@@ -156,9 +156,13 @@ void compareThreePlots(TCanvas* c0, TH1D *h_singleMu, TH1D *h_singlePi, TH1D *h_
 
   TLegend* leg = new TLegend();
   leg = new TLegend(0.55, 0.75, .85, .85);
-  leg->AddEntry(h_singleMu, ("Single Muon, <E> = "+s_meanE_mu+" MeV").c_str(), "l");
-  leg->AddEntry(h_singlePi, ("Single Pion, <E> = "+s_meanE_pi+" MeV").c_str(), "l");
-  leg->AddEntry(h_minBias,  ("Minimum Bias (0PU), <E> = "+s_meanE_minBias+" MeV").c_str(), "l");
+  leg->SetTextSize(0.02);
+  //leg->AddEntry(h_singleMu, ("Single Muon, <E> = "+s_meanE_mu+" MeV").c_str(), "l");
+  //leg->AddEntry(h_singlePi, ("Single Pion, <E> = "+s_meanE_pi+" MeV").c_str(), "l");
+  //leg->AddEntry(h_minBias,  ("Minimum Bias (200PU), <E> = "+s_meanE_minBias+" MeV").c_str(), "l");
+  leg->AddEntry(h_singleMu, "Single Muon", "l");
+  leg->AddEntry(h_singlePi, "Single Pion", "l");
+  leg->AddEntry(h_minBias,  "Minimum Bias", "l");
   leg->Draw("same");
 
   CMS_lumi( c0, 0, 0);
@@ -187,7 +191,7 @@ void compareTwoEfficiencies(TCanvas* c0, TGraphAsymmErrors *g_singleMu, TGraphAs
   g_singleMu->GetYaxis()->SetTitle( yname.c_str() );
   g_singleMu->GetXaxis()->SetTitle( xname.c_str() );
 
-  //g_singleMu->GetYaxis()->SetRangeUser(0.0, 1.1);
+  g_singleMu->GetYaxis()->SetRangeUser(0.0, 1.1);
   g_singleMu->Draw();
   g_singlePi->Draw("same");
 
@@ -226,7 +230,7 @@ void compareThreeEfficiencies(TCanvas* c0, TGraphAsymmErrors *g_singleMu, TGraph
   g_singleMu->GetYaxis()->SetTitle( yname.c_str() );
   g_singleMu->GetXaxis()->SetTitle( xname.c_str() );
 
-  //g_singleMu->GetYaxis()->SetRangeUser(0.0, 1.1);
+  g_singleMu->GetYaxis()->SetRangeUser(0.0, 1.1);
   g_singleMu->Draw();
   g_singlePi->Draw("same");
   g_minBias->Draw("same");
@@ -235,7 +239,7 @@ void compareThreeEfficiencies(TCanvas* c0, TGraphAsymmErrors *g_singleMu, TGraph
   leg = new TLegend(0.65, 0.55, .85, .65);
   leg->AddEntry(g_singleMu, "Single Muons", "l");
   leg->AddEntry(g_singlePi, "Single Pions", "l");
-  leg->AddEntry(g_singlePi, "Minimum Bias (0PU)", "l");
+  leg->AddEntry(g_singlePi, "Minimum Bias (200PU)", "l");
   leg->Draw("same");
 
 
@@ -248,17 +252,47 @@ void compareThreeEfficiencies(TCanvas* c0, TGraphAsymmErrors *g_singleMu, TGraph
   c0->Print( (topDir + "/" + hname + ".png").c_str() );
 }
 
-TGraphAsymmErrors* returnOccupancyCurve(TFile* f0, string s_recHitEnergy_ringN)
+TGraphAsymmErrors* returnOccupancyCurve(TFile* f0, string s_recHitEnergy_ringN, int ringN, bool isEta=false, bool is200PU=false)
 {
+  int skipBins = 1;
+  double totalModules = 0;
+  if (ringN==0)  totalModules = (64+64+80+96+112+112+128+144+160+160+176)*2;
+  if (ringN==1)  totalModules = 64*2;
+  if (ringN==2)  totalModules = 64*2;
+  if (ringN==3)  totalModules = 80*2;
+  if (ringN==4)  totalModules = 96*2;
+  if (ringN==5)  totalModules = 112*2;
+  if (ringN==6)  totalModules = 112*2;
+  if (ringN==7)  totalModules = 128*2;
+  if (ringN==8)  totalModules = 144*2;
+  if (ringN==9)  totalModules = 160*2;
+  if (ringN==10) totalModules = 160*2;
+  if (ringN==11) totalModules = 176*2;
+
   TH1D* h_recHitEnergy_ringN = (TH1D*)f0->Get( s_recHitEnergy_ringN.c_str() );
-  TH1D* h_occupancy_numerator = new TH1D( ("h_occupancy_numerator_"+s_recHitEnergy_ringN).c_str(), ("h_occupancy_numerator_"+s_recHitEnergy_ringN).c_str(), h_recHitEnergy_ringN->GetXaxis()->GetNbins(), h_recHitEnergy_ringN->GetXaxis()->GetXmin(), h_recHitEnergy_ringN->GetXaxis()->GetXmax() );
-  TH1D* h_occupancy_denominator = new TH1D( ("h_occupancy_denominator_"+s_recHitEnergy_ringN).c_str(), ("h_occupancy_denominator_"+s_recHitEnergy_ringN).c_str(), h_recHitEnergy_ringN->GetXaxis()->GetNbins(), h_recHitEnergy_ringN->GetXaxis()->GetXmin(), h_recHitEnergy_ringN->GetXaxis()->GetXmax() );
-  
-  for (int iBin = 0; iBin < h_recHitEnergy_ringN->GetXaxis()->GetNbins(); iBin++)
+  TH1D* h_nEvents = (TH1D*)f0->Get( "numberOfEvents" );
+
+  TH1D* h_occupancy_numerator = new TH1D( ("h_occupancy_numerator_"+s_recHitEnergy_ringN).c_str(), ("h_occupancy_numerator_"+s_recHitEnergy_ringN).c_str(), h_recHitEnergy_ringN->GetXaxis()->GetNbins()-skipBins, h_recHitEnergy_ringN->GetXaxis()->GetBinCenter(skipBins), h_recHitEnergy_ringN->GetXaxis()->GetXmax() );
+  TH1D* h_occupancy_denominator = new TH1D( ("h_occupancy_denominator_"+s_recHitEnergy_ringN).c_str(), ("h_occupancy_denominator_"+s_recHitEnergy_ringN).c_str(), h_recHitEnergy_ringN->GetXaxis()->GetNbins()-skipBins, h_recHitEnergy_ringN->GetXaxis()->GetBinCenter(skipBins), h_recHitEnergy_ringN->GetXaxis()->GetXmax() );
+
+
+  for (int iBin = skipBins+1; iBin < h_recHitEnergy_ringN->GetXaxis()->GetNbins(); iBin++)
     {
-      h_occupancy_numerator->SetBinContent  ( iBin, h_recHitEnergy_ringN->Integral(iBin, h_recHitEnergy_ringN->GetXaxis()->GetNbins()+1) );
-      h_occupancy_denominator->SetBinContent( iBin, h_recHitEnergy_ringN->Integral(0,    h_recHitEnergy_ringN->GetXaxis()->GetNbins()+1) );
+      h_occupancy_denominator->SetBinContent( iBin, totalModules*h_nEvents->GetEntries() );
+      h_occupancy_numerator->SetBinContent  ( iBin, h_recHitEnergy_ringN->Integral(iBin, h_recHitEnergy_ringN->GetXaxis()->GetNbins()+1) ); 
+      if (isEta) {
+	h_occupancy_numerator->SetBinContent  ( iBin, h_recHitEnergy_ringN->GetBinContent(iBin) ); 
+	h_occupancy_denominator->SetBinContent( iBin, h_nEvents->GetEntries() );
+      }
+
+      if (is200PU)
+	h_occupancy_numerator->Scale(200);
+      //cout <<"Occ= " << h_recHitEnergy_ringN->Integral(iBin, h_recHitEnergy_ringN->GetXaxis()->GetNbins()+1)/(totalModules*h_nEvents->GetEntries()) << "\tBin= " << iBin << "\tDenom= " << totalModules*h_nEvents->GetEntries() << "\tNum= " << h_recHitEnergy_ringN->Integral(iBin, h_recHitEnergy_ringN->GetXaxis()->GetNbins()+1) << endl;
+      
     }
+
+  h_occupancy_numerator->Sumw2();
+  h_occupancy_denominator->Sumw2();
   
   TGraphAsymmErrors* ge = new TGraphAsymmErrors(h_occupancy_numerator, h_occupancy_denominator);
   ge->SetTitle( ("occupancy_" + s_recHitEnergy_ringN).c_str() );
@@ -272,10 +306,145 @@ TGraphAsymmErrors* returnTGraphAsymm(TFile* f0, string s_numerator, string s_den
 {
   TH1D* h_numerator = (TH1D*)f0->Get( s_numerator.c_str() );
   TH1D* h_denominator = (TH1D*)f0->Get( s_denominator.c_str() );
+
+  h_numerator->Sumw2();
+  h_denominator->Sumw2();
+
   TGraphAsymmErrors *ge = new TGraphAsymmErrors(h_numerator, h_denominator);
 
   return ge;
 }
+
+void makeOccupancyPlot(TCanvas* c0, TGraphAsymmErrors *g_occupancy, string hname, string xname, string yname, bool isLogX=true, bool isLogY=false)
+{
+  c0->cd();
+  c0->SetLogy(0);
+  c0->SetLogx(0);
+  c0->Clear();
+  c0->SetGrid();
+  if(isLogX) c0->SetLogx();
+  if(isLogY) c0->SetLogy();
+  //c0->SetLogy();
+
+  g_occupancy->SetLineColor(kBlack);
+  g_occupancy->SetLineWidth(2);
+
+  //g_occupancy->Scale(200 );
+  g_occupancy->GetYaxis()->SetTitle( yname.c_str() );
+  g_occupancy->GetXaxis()->SetTitle( xname.c_str() );
+  g_occupancy->GetXaxis()->SetRangeUser(0.01,3);
+  g_occupancy->GetYaxis()->SetRangeUser(0.00001, 1.1);
+  
+  g_occupancy->Draw();
+
+  TLegend* leg = new TLegend();
+  leg = new TLegend(0.50, 0.75, .70, .85);
+  leg->SetTextSize(0.03);
+  leg->AddEntry(g_occupancy, "Min Bias 200PU", "l");
+  leg->Draw("same");
+
+
+  CMS_lumi( c0, 0, 0);
+
+  c0->SetLeftMargin(0.15);
+  //c0->SetRightMargin(0.05);
+  //c0->SetBottomMargin(0.15);
+
+  c0->Print( (topDir + "/" + hname + ".png").c_str() );
+
+}
+
+
+void makeOccupancyPlotAllRings(TCanvas* c0, TGraphAsymmErrors *g_r1, TGraphAsymmErrors *g_r2, TGraphAsymmErrors *g_r3, TGraphAsymmErrors *g_r4, TGraphAsymmErrors *g_r5, TGraphAsymmErrors *g_r6, TGraphAsymmErrors *g_r7, TGraphAsymmErrors *g_r8, TGraphAsymmErrors *g_r9, TGraphAsymmErrors *g_r10, TGraphAsymmErrors *g_r11, string hname, string xname, string yname, bool isLogX=true, bool isLogY=false)
+{
+  c0->cd();
+  c0->SetLogy(0);
+  c0->SetLogx(0);
+  c0->Clear();
+  c0->SetGrid();
+  if(isLogX) c0->SetLogx();
+  if(isLogY) c0->SetLogy();
+
+  g_r1->Draw();
+  g_r1->SetLineColor(kPink+10);
+  g_r1->SetMarkerColor(kPink+10);
+  //g_r1->SetMarkerStyle(0);
+  g_r1->SetLineWidth(3);
+  g_r2->SetLineColor(kBlue);
+  g_r2->SetMarkerColor(kBlue);
+  g_r2->SetLineWidth(3);
+  g_r3->SetLineColor(kOrange+10);
+  g_r3->SetMarkerColor(kOrange+10);
+  g_r3->SetLineWidth(3);
+  g_r4->SetLineColor(kMagenta+2);
+  g_r4->SetMarkerColor(kMagenta+2);
+  g_r4->SetLineWidth(3);
+  g_r5->SetLineColor(kGreen+1);
+  g_r5->SetMarkerColor(kGreen+1);
+  g_r5->SetLineWidth(3);
+  g_r6->SetLineColor(kMagenta-4);
+  g_r6->SetMarkerColor(kMagenta-4);
+  g_r6->SetLineWidth(3);
+  g_r7->SetLineColor(kCyan+1);
+  g_r7->SetMarkerColor(kCyan+1);
+  g_r7->SetLineWidth(3);
+  g_r8->SetLineColor(kRed-6);
+  g_r8->SetMarkerColor(kRed-6);
+  g_r8->SetLineWidth(3);
+  g_r9->SetLineColor(kOrange-6);
+  g_r9->SetMarkerColor(kOrange-6);
+  g_r9->SetLineWidth(3);
+  g_r10->SetLineColor(kRed);
+  g_r10->SetMarkerColor(kRed);
+  g_r10->SetLineWidth(3);
+  g_r11->SetLineColor(kBlue-10);
+  g_r11->SetMarkerColor(kBlue-10);
+  g_r11->SetLineWidth(3);
+
+  g_r1->GetYaxis()->SetTitle( yname.c_str() );
+  g_r1->GetXaxis()->SetTitle( xname.c_str() );
+  //g_r1->GetXaxis()->SetRangeUser(0.01,3);
+  g_r1->GetYaxis()->SetRangeUser(0.001, 5.1);
+  
+
+  g_r2->Draw("same");
+  g_r3->Draw("same");
+  g_r4->Draw("same");
+  g_r5->Draw("same");
+  g_r6->Draw("same");
+  g_r7->Draw("same");
+  g_r8->Draw("same");
+  g_r9->Draw("same");
+  g_r10->Draw("same");
+  g_r11->Draw("same");
+
+  TLegend* leg = new TLegend();
+  leg = new TLegend(0.30, 0.60, .50, .85);
+  leg->SetTextSize(0.02);
+  leg->AddEntry(g_r1, "ETL Ring 1", "l");
+  leg->AddEntry(g_r2, "ETL Ring 2", "l");
+  leg->AddEntry(g_r3, "ETL Ring 3", "l");
+  leg->AddEntry(g_r4, "ETL Ring 4", "l");
+  leg->AddEntry(g_r5, "ETL Ring 5", "l");
+  leg->AddEntry(g_r6, "ETL Ring 6", "l");
+  leg->AddEntry(g_r7, "ETL Ring 7", "l");
+  leg->AddEntry(g_r8, "ETL Ring 8", "l");
+  leg->AddEntry(g_r9, "ETL Ring 9", "l");
+  leg->AddEntry(g_r10, "ETL Ring 10", "l");
+  leg->AddEntry(g_r11, "ETL Ring 11", "l");
+  leg->Draw("same");
+
+
+  CMS_lumi( c0, 0, 0);
+
+  c0->SetLeftMargin(0.15);
+  //c0->SetRightMargin(0.05);
+  //c0->SetBottomMargin(0.15);
+
+  c0->Print( (topDir + "/" + hname + ".png").c_str() );
+
+}
+
 
 void plotCombiner()
 {
@@ -293,9 +462,9 @@ void plotCombiner()
   lumiTextSize = 0.3;
 
   // *** 2. Files and trees
-  TFile *f_singleMu = new TFile( ("./"+topDir+"/singleMuon_v0_r0_01-31-19.root").c_str(), "READ");
-  TFile *f_singlePi = new TFile( ("./"+topDir+"/singlePion_v0_r0_01-31-19.root").c_str(), "READ");
-  TFile *f_minBias  = new TFile( ("./"+topDir+"/minBias14TeV_v0_r0_01-31-19.root").c_str(), "READ");
+  TFile *f_singleMu = new TFile( ("./"+topDir+"/singleMuon_v0_r6_01-31-19.root").c_str(), "READ");
+  TFile *f_singlePi = new TFile( ("./"+topDir+"/singlePion_v0_r6_01-31-19.root").c_str(), "READ");
+  TFile *f_minBias  = new TFile( ("./"+topDir+"/minBias14TeV_v0_r6_01-31-19.root").c_str(), "READ");
 
   // *** 3. Plots
   TH1D *h_recHit_energy_dR05_ETL_singleMu = (TH1D*)f_singleMu->Get("recHit_energy_dR05_withTrackETL");
@@ -322,20 +491,28 @@ void plotCombiner()
   TH1D *h_recHit_maxEnergy_withTrack_BTL_minBias = (TH1D*)f_minBias->Get("recHit_maxEnergy_withTrackBTL");
   TH1D *h_recHit_maxEnergy_dRpass_withTrack_BTL_minBias = (TH1D*)f_minBias->Get("recHit_maxEnergy_dRpass_withTrackBTL");
 
-  /*
+  
   TGraphAsymmErrors *g_track_eta_energyThresholdEff_ETL_singleMu = returnTGraphAsymm( f_singleMu, "track_eta_atETL_overThreshE", "track_eta_atETL");
-  TGraphAsymmErrors *g_track_eta_energyThresholdEff_ETL_singlePi = returnTGraphAsymm( f_singleMu, "track_eta_atETL_overThreshE", "track_eta_atETL");
-  TGraphAsymmErrors *g_track_phi_energyThresholdEff_ETL_singleMu = returnTGraphAsymm( f_singlePi, "track_phi_atETL_overThreshE", "track_phi_atETL");
-  TGraphAsymmErrors *g_track_phi_energyThresholdEff_ETL_singlePi = returnTGraphAsymm( f_singleMu, "track_phi_atETL_overThreshE", "track_phi_atETL");
-  TGraphAsymmErrors *g_track_pt_energyThresholdEff_ETL_singleMu = returnTGraphAsymm( f_singlePi, "track_pt_atETL_overThreshE", "track_pt_atETL");
-  TGraphAsymmErrors *g_track_pt_energyThresholdEff_ETL_singlePi = returnTGraphAsymm( f_singleMu, "track_pt_atETL_overThreshE", "track_pt_atETL");
-  TGraphAsymmErrors *g_track_eta_energyThresholdEff_BTL_singleMu = returnTGraphAsymm( f_singlePi, "track_eta_atBTL_overThreshE", "track_eta_atBTL");
-  TGraphAsymmErrors *g_track_eta_energyThresholdEff_BTL_singlePi = returnTGraphAsymm( f_singleMu, "track_eta_atBTL_overThreshE", "track_eta_atBTL");
-  TGraphAsymmErrors *g_track_phi_energyThresholdEff_BTL_singleMu = returnTGraphAsymm( f_singlePi, "track_phi_atBTL_overThreshE", "track_phi_atBTL");
-  TGraphAsymmErrors *g_track_phi_energyThresholdEff_BTL_singlePi = returnTGraphAsymm( f_singleMu, "track_phi_atBTL_overThreshE", "track_phi_atBTL");
-  TGraphAsymmErrors *g_track_pt_energyThresholdEff_BTL_singleMu = returnTGraphAsymm( f_singlePi, "track_pt_atBTL_overThreshE", "track_pt_atBTL");
-  TGraphAsymmErrors *g_track_pt_energyThresholdEff_BTL_singlePi = returnTGraphAsymm( f_singleMu, "track_pt_atBTL_overThreshE", "track_pt_atBTL");
-  */
+  TGraphAsymmErrors *g_track_phi_energyThresholdEff_ETL_singleMu = returnTGraphAsymm( f_singleMu, "track_phi_atETL_overThreshE", "track_phi_atETL");
+  TGraphAsymmErrors *g_track_pt_energyThresholdEff_ETL_singleMu = returnTGraphAsymm( f_singleMu, "track_pt_atETL_overThreshE", "track_pt_atETL");
+  TGraphAsymmErrors *g_track_eta_energyThresholdEff_BTL_singleMu = returnTGraphAsymm( f_singleMu, "track_eta_atBTL_overThreshE", "track_eta_atBTL");
+  TGraphAsymmErrors *g_track_phi_energyThresholdEff_BTL_singleMu = returnTGraphAsymm( f_singleMu, "track_phi_atBTL_overThreshE", "track_phi_atBTL");
+  TGraphAsymmErrors *g_track_pt_energyThresholdEff_BTL_singleMu = returnTGraphAsymm( f_singleMu, "track_pt_atBTL_overThreshE", "track_pt_atBTL");
+
+  TGraphAsymmErrors *g_track_eta_energyThresholdEff_ETL_singlePi = returnTGraphAsymm( f_singlePi, "track_eta_atETL_overThreshE", "track_eta_atETL");
+  TGraphAsymmErrors *g_track_phi_energyThresholdEff_ETL_singlePi = returnTGraphAsymm( f_singlePi, "track_phi_atETL_overThreshE", "track_phi_atETL");
+  TGraphAsymmErrors *g_track_pt_energyThresholdEff_ETL_singlePi = returnTGraphAsymm( f_singlePi, "track_pt_atETL_overThreshE", "track_pt_atETL");
+  TGraphAsymmErrors *g_track_eta_energyThresholdEff_BTL_singlePi = returnTGraphAsymm( f_singlePi, "track_eta_atBTL_overThreshE", "track_eta_atBTL");
+  TGraphAsymmErrors *g_track_phi_energyThresholdEff_BTL_singlePi = returnTGraphAsymm( f_singlePi, "track_phi_atBTL_overThreshE", "track_phi_atBTL");
+  TGraphAsymmErrors *g_track_pt_energyThresholdEff_BTL_singlePi = returnTGraphAsymm( f_singlePi, "track_pt_atBTL_overThreshE", "track_pt_atBTL");
+
+  TGraphAsymmErrors *g_track_eta_energyThresholdEff_ETL_minBias = returnTGraphAsymm( f_minBias, "track_eta_atETL_overThreshE", "track_eta_atETL");
+  TGraphAsymmErrors *g_track_phi_energyThresholdEff_ETL_minBias = returnTGraphAsymm( f_minBias, "track_phi_atETL_overThreshE", "track_phi_atETL");
+  TGraphAsymmErrors *g_track_pt_energyThresholdEff_ETL_minBias = returnTGraphAsymm( f_minBias, "track_pt_atETL_overThreshE", "track_pt_atETL");
+  TGraphAsymmErrors *g_track_eta_energyThresholdEff_BTL_minBias = returnTGraphAsymm( f_minBias, "track_eta_atBTL_overThreshE", "track_eta_atBTL");
+  TGraphAsymmErrors *g_track_phi_energyThresholdEff_BTL_minBias = returnTGraphAsymm( f_minBias, "track_phi_atBTL_overThreshE", "track_phi_atBTL");
+  TGraphAsymmErrors *g_track_pt_energyThresholdEff_BTL_minBias = returnTGraphAsymm( f_minBias, "track_pt_atBTL_overThreshE", "track_pt_atBTL");
+  
   // *** 4. Drawing
   compareTwoPlots(c1, h_recHit_energy_dR05_BTL_singleMu, h_recHit_energy_dR05_BTL_singlePi, "h_recHit_energy_BTL", "BTL #Sigma E^{#Delta R < 0.05}_{recHit} [MeV]", "Event Fraction / 1 MeV", true);
   compareTwoPlots(c1, h_recHit_energy_dR05_ETL_singleMu, h_recHit_energy_dR05_ETL_singlePi, "h_recHit_energy_ETL", "ETL #Sigma E^{#Delta R < 0.05}_{recHit} [MeV]", "Event Fraction / 0.01 MeV", true);
@@ -348,30 +525,104 @@ void plotCombiner()
   compareTwoPlots(c1, h_recHit_maxEnergy_dRpass_withTrack_ETL_singleMu, h_recHit_maxEnergy_dRpass_withTrack_ETL_singlePi, "h_recHit_maxHitEnergy_dRpass_withTrack_ETL", "ETL Max recHit Energy (#Delta R < 0.05) [MeV]", "Event Fraction / 0.1 MeV", true);
 
 
-  compareThreePlots(c1, h_recHit_energy_dR05_BTL_singleMu, h_recHit_energy_dR05_BTL_singlePi, h_recHit_energy_dR05_ETL_minBias, "h_3_recHit_energy_BTL", "BTL #Sigma E^{#Delta R < 0.05}_{recHit} [MeV]", "Event Fraction / 1 MeV", true);
+  compareThreePlots(c1, h_recHit_energy_dR05_BTL_singleMu, h_recHit_energy_dR05_BTL_singlePi, h_recHit_energy_dR05_BTL_minBias, "h_3_recHit_energy_BTL", "BTL #Sigma E^{#Delta R < 0.05}_{recHit} [MeV]", "Event Fraction / 1 MeV", true);
   compareThreePlots(c1, h_recHit_energy_dR05_ETL_singleMu, h_recHit_energy_dR05_ETL_singlePi, h_recHit_energy_dR05_ETL_minBias, "h_3_recHit_energy_ETL", "ETL #Sigma E^{#Delta R < 0.05}_{recHit} [MeV]", "Event Fraction / 0.01 MeV", true);
 
-  /*compareTwoEfficiencies(c1, g_track_eta_energyThresholdEff_ETL_singleMu, g_track_eta_energyThresholdEff_ETL_singlePi, "h_track_eta_energyThresholdEff_ETL", "#eta at ETL", "Efficiency");
+  compareTwoEfficiencies(c1, g_track_eta_energyThresholdEff_ETL_singleMu, g_track_eta_energyThresholdEff_ETL_singlePi, "h_track_eta_energyThresholdEff_ETL", "#eta at ETL", "Efficiency");
   compareTwoEfficiencies(c1, g_track_phi_energyThresholdEff_ETL_singleMu, g_track_phi_energyThresholdEff_ETL_singlePi, "h_track_phi_energyThresholdEff_ETL", "#phi at ETL", "Efficiency");
   compareTwoEfficiencies(c1, g_track_pt_energyThresholdEff_ETL_singleMu, g_track_pt_energyThresholdEff_ETL_singlePi, "h_track_pt_energyThresholdEff_ETL", "Track p_{T} (ETL-matched) [GeV]", "Efficiency");
   compareTwoEfficiencies(c1, g_track_eta_energyThresholdEff_BTL_singleMu, g_track_eta_energyThresholdEff_BTL_singlePi, "h_track_eta_energyThresholdEff_BTL", "#eta at BTL", "Efficiency");
   compareTwoEfficiencies(c1, g_track_phi_energyThresholdEff_BTL_singleMu, g_track_phi_energyThresholdEff_BTL_singlePi, "h_track_phi_energyThresholdEff_BTL", "#phi at BTL", "Efficiency");
   compareTwoEfficiencies(c1, g_track_pt_energyThresholdEff_BTL_singleMu, g_track_pt_energyThresholdEff_BTL_singlePi, "h_track_pt_energyThresholdEff_BTL", "Track p_{T} (BTL-matched) [GeV]", "Efficiency");
-  */
+
+  compareThreeEfficiencies(c1, g_track_eta_energyThresholdEff_ETL_singleMu, g_track_eta_energyThresholdEff_ETL_singlePi, g_track_eta_energyThresholdEff_ETL_minBias, "h_3_track_eta_energyThresholdEff_ETL", "#eta at ETL", "Efficiency");
+  compareThreeEfficiencies(c1, g_track_phi_energyThresholdEff_ETL_singleMu, g_track_phi_energyThresholdEff_ETL_singlePi, g_track_phi_energyThresholdEff_ETL_minBias, "h_3_track_phi_energyThresholdEff_ETL", "#phi at ETL", "Efficiency");
+  compareThreeEfficiencies(c1, g_track_pt_energyThresholdEff_ETL_singleMu, g_track_pt_energyThresholdEff_ETL_singlePi, g_track_pt_energyThresholdEff_ETL_minBias, "h_3_track_pt_energyThresholdEff_ETL", "Track p_{T} (ETL-matched) [GeV]", "Efficiency");
+  compareThreeEfficiencies(c1, g_track_eta_energyThresholdEff_BTL_singleMu, g_track_eta_energyThresholdEff_BTL_singlePi, g_track_eta_energyThresholdEff_BTL_minBias, "h_3_track_eta_energyThresholdEff_BTL", "#eta at BTL", "Efficiency");
+  compareThreeEfficiencies(c1, g_track_phi_energyThresholdEff_BTL_singleMu, g_track_phi_energyThresholdEff_BTL_singlePi, g_track_phi_energyThresholdEff_BTL_minBias, "h_3_track_phi_energyThresholdEff_BTL", "#phi at BTL", "Efficiency");
+  compareThreeEfficiencies(c1, g_track_pt_energyThresholdEff_BTL_singleMu, g_track_pt_energyThresholdEff_BTL_singlePi, g_track_pt_energyThresholdEff_BTL_minBias, "h_3_track_pt_energyThresholdEff_BTL", "Track p_{T} (BTL-matched) [GeV]", "Efficiency");
+  
 
   // *** 5. Occupancies
-  TGraphAsymmErrors* recHit_occupancy_VS_energy_allRings_ETL = returnOccupancyCurve(f_minBias, "recHit_energy_allHitsAllRings_ETL");
-  TGraphAsymmErrors* recHit_occupancy_VS_energy_Ring1_ETL    = returnOccupancyCurve(f_minBias, "recHit_energy_allHitsRing1_ETL");
-  TGraphAsymmErrors* recHit_occupancy_VS_energy_Ring2_ETL    = returnOccupancyCurve(f_minBias, "recHit_energy_allHitsRing2_ETL");
-  TGraphAsymmErrors* recHit_occupancy_VS_energy_Ring3_ETL    = returnOccupancyCurve(f_minBias, "recHit_energy_allHitsRing3_ETL");
-  TGraphAsymmErrors* recHit_occupancy_VS_energy_Ring4_ETL    = returnOccupancyCurve(f_minBias, "recHit_energy_allHitsRing4_ETL");
-  TGraphAsymmErrors* recHit_occupancy_VS_energy_Ring5_ETL    = returnOccupancyCurve(f_minBias, "recHit_energy_allHitsRing5_ETL");
-  TGraphAsymmErrors* recHit_occupancy_VS_energy_Ring6_ETL    = returnOccupancyCurve(f_minBias, "recHit_energy_allHitsRing6_ETL");
-  TGraphAsymmErrors* recHit_occupancy_VS_energy_Ring7_ETL    = returnOccupancyCurve(f_minBias, "recHit_energy_allHitsRing7_ETL");
-  TGraphAsymmErrors* recHit_occupancy_VS_energy_Ring8_ETL    = returnOccupancyCurve(f_minBias, "recHit_energy_allHitsRing8_ETL");
-  TGraphAsymmErrors* recHit_occupancy_VS_energy_Ring9_ETL    = returnOccupancyCurve(f_minBias, "recHit_energy_allHitsRing9_ETL");
-  TGraphAsymmErrors* recHit_occupancy_VS_energy_Ring10_ETL   = returnOccupancyCurve(f_minBias, "recHit_energy_allHitsRing10_ETL");
-  TGraphAsymmErrors* recHit_occupancy_VS_energy_Ring11_ETL   = returnOccupancyCurve(f_minBias, "recHit_energy_allHitsRing11_ETL");
+  TGraphAsymmErrors* recHit_occupancy_VS_energy_allRings_ETL = returnOccupancyCurve(f_minBias, "recHit_energy_allHitsAllRings_ETL", 0);
+  TGraphAsymmErrors* recHit_occupancy_VS_energy_Ring1_ETL    = returnOccupancyCurve(f_minBias, "recHit_energy_allHitsRing1_ETL", 1);
+  TGraphAsymmErrors* recHit_occupancy_VS_energy_Ring2_ETL    = returnOccupancyCurve(f_minBias, "recHit_energy_allHitsRing2_ETL", 2);
+  TGraphAsymmErrors* recHit_occupancy_VS_energy_Ring3_ETL    = returnOccupancyCurve(f_minBias, "recHit_energy_allHitsRing3_ETL", 3);
+  TGraphAsymmErrors* recHit_occupancy_VS_energy_Ring4_ETL    = returnOccupancyCurve(f_minBias, "recHit_energy_allHitsRing4_ETL", 4);
+  TGraphAsymmErrors* recHit_occupancy_VS_energy_Ring5_ETL    = returnOccupancyCurve(f_minBias, "recHit_energy_allHitsRing5_ETL", 5);
+  TGraphAsymmErrors* recHit_occupancy_VS_energy_Ring6_ETL    = returnOccupancyCurve(f_minBias, "recHit_energy_allHitsRing6_ETL", 6);
+  TGraphAsymmErrors* recHit_occupancy_VS_energy_Ring7_ETL    = returnOccupancyCurve(f_minBias, "recHit_energy_allHitsRing7_ETL", 7);
+  TGraphAsymmErrors* recHit_occupancy_VS_energy_Ring8_ETL    = returnOccupancyCurve(f_minBias, "recHit_energy_allHitsRing8_ETL", 8);
+  TGraphAsymmErrors* recHit_occupancy_VS_energy_Ring9_ETL    = returnOccupancyCurve(f_minBias, "recHit_energy_allHitsRing9_ETL", 9);
+  TGraphAsymmErrors* recHit_occupancy_VS_energy_Ring10_ETL   = returnOccupancyCurve(f_minBias, "recHit_energy_allHitsRing10_ETL", 10);
+  TGraphAsymmErrors* recHit_occupancy_VS_energy_Ring11_ETL   = returnOccupancyCurve(f_minBias, "recHit_energy_allHitsRing11_ETL", 11);
 
-  recHit_occupancy_VS_energy_allRings_ETL->Draw();
+  TGraphAsymmErrors* recHit_occupancy_VS_energy_divByNModule_allRings_ETL = returnOccupancyCurve(f_minBias, "recHit_energy_divByNModules_allHitsAllRings_ETL", 0);
+  TGraphAsymmErrors* recHit_occupancy_VS_energy_divByNModule_Ring1_ETL    = returnOccupancyCurve(f_minBias, "recHit_energy_divByNModules_allHitsRing1_ETL", 1);
+  TGraphAsymmErrors* recHit_occupancy_VS_energy_divByNModule_Ring2_ETL    = returnOccupancyCurve(f_minBias, "recHit_energy_divByNModules_allHitsRing2_ETL", 2);
+  TGraphAsymmErrors* recHit_occupancy_VS_energy_divByNModule_Ring3_ETL    = returnOccupancyCurve(f_minBias, "recHit_energy_divByNModules_allHitsRing3_ETL", 3);
+  TGraphAsymmErrors* recHit_occupancy_VS_energy_divByNModule_Ring4_ETL    = returnOccupancyCurve(f_minBias, "recHit_energy_divByNModules_allHitsRing4_ETL", 4);
+  TGraphAsymmErrors* recHit_occupancy_VS_energy_divByNModule_Ring5_ETL    = returnOccupancyCurve(f_minBias, "recHit_energy_divByNModules_allHitsRing5_ETL", 5);
+  TGraphAsymmErrors* recHit_occupancy_VS_energy_divByNModule_Ring6_ETL    = returnOccupancyCurve(f_minBias, "recHit_energy_divByNModules_allHitsRing6_ETL", 6);
+  TGraphAsymmErrors* recHit_occupancy_VS_energy_divByNModule_Ring7_ETL    = returnOccupancyCurve(f_minBias, "recHit_energy_divByNModules_allHitsRing7_ETL", 7);
+  TGraphAsymmErrors* recHit_occupancy_VS_energy_divByNModule_Ring8_ETL    = returnOccupancyCurve(f_minBias, "recHit_energy_divByNModules_allHitsRing8_ETL", 8);
+  TGraphAsymmErrors* recHit_occupancy_VS_energy_divByNModule_Ring9_ETL    = returnOccupancyCurve(f_minBias, "recHit_energy_divByNModules_allHitsRing9_ETL", 9);
+  TGraphAsymmErrors* recHit_occupancy_VS_energy_divByNModule_Ring10_ETL   = returnOccupancyCurve(f_minBias, "recHit_energy_divByNModules_allHitsRing10_ETL", 10);
+  TGraphAsymmErrors* recHit_occupancy_VS_energy_divByNModule_Ring11_ETL   = returnOccupancyCurve(f_minBias, "recHit_energy_divByNModules_allHitsRing11_ETL", 11);
+
+  TGraphAsymmErrors* recHit_occupancy_VS_eta_allRings_ETL = returnOccupancyCurve(f_minBias, "recHit_eta_allHitsAllRings_ETL", 0, true);
+  TGraphAsymmErrors* recHit_occupancy_VS_eta_Ring1_ETL    = returnOccupancyCurve(f_minBias, "recHit_eta_allHitsRing1_ETL", 1, true);
+  TGraphAsymmErrors* recHit_occupancy_VS_eta_Ring2_ETL    = returnOccupancyCurve(f_minBias, "recHit_eta_allHitsRing2_ETL", 2, true);
+  TGraphAsymmErrors* recHit_occupancy_VS_eta_Ring3_ETL    = returnOccupancyCurve(f_minBias, "recHit_eta_allHitsRing3_ETL", 3, true);
+  TGraphAsymmErrors* recHit_occupancy_VS_eta_Ring4_ETL    = returnOccupancyCurve(f_minBias, "recHit_eta_allHitsRing4_ETL", 4, true);
+  TGraphAsymmErrors* recHit_occupancy_VS_eta_Ring5_ETL    = returnOccupancyCurve(f_minBias, "recHit_eta_allHitsRing5_ETL", 5, true);
+  TGraphAsymmErrors* recHit_occupancy_VS_eta_Ring6_ETL    = returnOccupancyCurve(f_minBias, "recHit_eta_allHitsRing6_ETL", 6, true);
+  TGraphAsymmErrors* recHit_occupancy_VS_eta_Ring7_ETL    = returnOccupancyCurve(f_minBias, "recHit_eta_allHitsRing7_ETL", 7, true);
+  TGraphAsymmErrors* recHit_occupancy_VS_eta_Ring8_ETL    = returnOccupancyCurve(f_minBias, "recHit_eta_allHitsRing8_ETL", 8, true);
+  TGraphAsymmErrors* recHit_occupancy_VS_eta_Ring9_ETL    = returnOccupancyCurve(f_minBias, "recHit_eta_allHitsRing9_ETL", 9, true);
+  TGraphAsymmErrors* recHit_occupancy_VS_eta_Ring10_ETL   = returnOccupancyCurve(f_minBias, "recHit_eta_allHitsRing10_ETL", 10, true);
+  TGraphAsymmErrors* recHit_occupancy_VS_eta_Ring11_ETL   = returnOccupancyCurve(f_minBias, "recHit_eta_allHitsRing11_ETL", 11, true);
+
+
+  makeOccupancyPlot(c1, recHit_occupancy_VS_energy_allRings_ETL, "occupancy_recHit_energy_allHitsAllRings", "Threshold Energy [MeV]", "Occupancy");
+  makeOccupancyPlot(c1, recHit_occupancy_VS_energy_Ring1_ETL, "occupancy_recHit_energy_allHitsRing1", "Threshold Energy [MeV]", "Occupancy");
+  makeOccupancyPlot(c1, recHit_occupancy_VS_energy_Ring2_ETL, "occupancy_recHit_energy_allHitsRing2", "Threshold Energy [MeV]", "Occupancy");
+  makeOccupancyPlot(c1, recHit_occupancy_VS_energy_Ring3_ETL, "occupancy_recHit_energy_allHitsRing3", "Threshold Energy [MeV]", "Occupancy");
+  makeOccupancyPlot(c1, recHit_occupancy_VS_energy_Ring4_ETL, "occupancy_recHit_energy_allHitsRing4", "Threshold Energy [MeV]", "Occupancy");
+  makeOccupancyPlot(c1, recHit_occupancy_VS_energy_Ring5_ETL, "occupancy_recHit_energy_allHitsRing5", "Threshold Energy [MeV]", "Occupancy");
+  makeOccupancyPlot(c1, recHit_occupancy_VS_energy_Ring6_ETL, "occupancy_recHit_energy_allHitsRing6", "Threshold Energy [MeV]", "Occupancy");
+  makeOccupancyPlot(c1, recHit_occupancy_VS_energy_Ring7_ETL, "occupancy_recHit_energy_allHitsRing7", "Threshold Energy [MeV]", "Occupancy");
+  makeOccupancyPlot(c1, recHit_occupancy_VS_energy_Ring8_ETL, "occupancy_recHit_energy_allHitsRing8", "Threshold Energy [MeV]", "Occupancy");
+  makeOccupancyPlot(c1, recHit_occupancy_VS_energy_Ring9_ETL, "occupancy_recHit_energy_allHitsRing9", "Threshold Energy [MeV]", "Occupancy");
+  makeOccupancyPlot(c1, recHit_occupancy_VS_energy_Ring10_ETL, "occupancy_recHit_energy_allHitsRing10", "Threshold Energy [MeV]", "Occupancy");
+  makeOccupancyPlot(c1, recHit_occupancy_VS_energy_Ring11_ETL, "occupancy_recHit_energy_allHitsRing11", "Threshold Energy [MeV]", "Occupancy");
+
+  makeOccupancyPlot(c1, recHit_occupancy_VS_energy_divByNModule_allRings_ETL, "recHit_energy_divByNModule_allHitsAllRings", "Threshold Energy [MeV]", "Occupancy");
+  makeOccupancyPlot(c1, recHit_occupancy_VS_energy_divByNModule_Ring1_ETL, "recHit_energy_divByNModule_allHitsRing1", "Threshold Energy [MeV]", "Occupancy");
+  makeOccupancyPlot(c1, recHit_occupancy_VS_energy_divByNModule_Ring2_ETL, "recHit_energy_divByNModule_allHitsRing2", "Threshold Energy [MeV]", "Occupancy");
+  makeOccupancyPlot(c1, recHit_occupancy_VS_energy_divByNModule_Ring3_ETL, "recHit_energy_divByNModule_allHitsRing3", "Threshold Energy [MeV]", "Occupancy");
+  makeOccupancyPlot(c1, recHit_occupancy_VS_energy_divByNModule_Ring4_ETL, "recHit_energy_divByNModule_allHitsRing4", "Threshold Energy [MeV]", "Occupancy");
+  makeOccupancyPlot(c1, recHit_occupancy_VS_energy_divByNModule_Ring5_ETL, "recHit_energy_divByNModule_allHitsRing5", "Threshold Energy [MeV]", "Occupancy");
+  makeOccupancyPlot(c1, recHit_occupancy_VS_energy_divByNModule_Ring6_ETL, "recHit_energy_divByNModule_allHitsRing6", "Threshold Energy [MeV]", "Occupancy");
+  makeOccupancyPlot(c1, recHit_occupancy_VS_energy_divByNModule_Ring7_ETL, "recHit_energy_divByNModule_allHitsRing7", "Threshold Energy [MeV]", "Occupancy");
+  makeOccupancyPlot(c1, recHit_occupancy_VS_energy_divByNModule_Ring8_ETL, "recHit_energy_divByNModule_allHitsRing8", "Threshold Energy [MeV]", "Occupancy");
+  makeOccupancyPlot(c1, recHit_occupancy_VS_energy_divByNModule_Ring9_ETL, "recHit_energy_divByNModule_allHitsRing9", "Threshold Energy [MeV]", "Occupancy");
+  makeOccupancyPlot(c1, recHit_occupancy_VS_energy_divByNModule_Ring10_ETL, "recHit_energy_divByNModule_allHitsRing10", "Threshold Energy [MeV]", "Occupancy");
+  makeOccupancyPlot(c1, recHit_occupancy_VS_energy_divByNModule_Ring11_ETL, "recHit_energy_divByNModule_allHitsRing11", "Threshold Energy [MeV]", "Occupancy");
+
+  makeOccupancyPlot(c1, recHit_occupancy_VS_eta_allRings_ETL, "occupancy_recHit_eta_allHitsAllRings", "ETL Rec Hit #eta", "Occupancy", false, true);
+  makeOccupancyPlot(c1, recHit_occupancy_VS_eta_Ring1_ETL, "occupancy_recHit_eta_allHitsRing1", "ETL Rec Hit #eta", "Occupancy", false);
+  makeOccupancyPlot(c1, recHit_occupancy_VS_eta_Ring2_ETL, "occupancy_recHit_eta_allHitsRing2", "ETL Rec Hit #eta", "Occupancy", false);
+  makeOccupancyPlot(c1, recHit_occupancy_VS_eta_Ring3_ETL, "occupancy_recHit_eta_allHitsRing3", "ETL Rec Hit #eta", "Occupancy", false);
+  makeOccupancyPlot(c1, recHit_occupancy_VS_eta_Ring4_ETL, "occupancy_recHit_eta_allHitsRing4", "ETL Rec Hit #eta", "Occupancy", false);
+  makeOccupancyPlot(c1, recHit_occupancy_VS_eta_Ring5_ETL, "occupancy_recHit_eta_allHitsRing5", "ETL Rec Hit #eta", "Occupancy", false);
+  makeOccupancyPlot(c1, recHit_occupancy_VS_eta_Ring6_ETL, "occupancy_recHit_eta_allHitsRing6", "ETL Rec Hit #eta", "Occupancy", false);
+  makeOccupancyPlot(c1, recHit_occupancy_VS_eta_Ring7_ETL, "occupancy_recHit_eta_allHitsRing7", "ETL Rec Hit #eta", "Occupancy", false);
+  makeOccupancyPlot(c1, recHit_occupancy_VS_eta_Ring8_ETL, "occupancy_recHit_eta_allHitsRing8", "ETL Rec Hit #eta", "Occupancy", false);
+  makeOccupancyPlot(c1, recHit_occupancy_VS_eta_Ring9_ETL, "occupancy_recHit_eta_allHitsRing9", "ETL Rec Hit #eta", "Occupancy", false);
+  makeOccupancyPlot(c1, recHit_occupancy_VS_eta_Ring10_ETL, "occupancy_recHit_eta_allHitsRing10", "ETL Rec Hit #eta", "Occupancy", false);
+  makeOccupancyPlot(c1, recHit_occupancy_VS_eta_Ring11_ETL, "occupancy_recHit_eta_allHitsRing11", "ETL Rec Hit #eta", "Occupancy", false);
+
+  makeOccupancyPlotAllRings(c1, recHit_occupancy_VS_eta_Ring1_ETL, recHit_occupancy_VS_eta_Ring2_ETL, recHit_occupancy_VS_eta_Ring3_ETL, recHit_occupancy_VS_eta_Ring4_ETL, recHit_occupancy_VS_eta_Ring5_ETL, recHit_occupancy_VS_eta_Ring6_ETL, recHit_occupancy_VS_eta_Ring7_ETL, recHit_occupancy_VS_eta_Ring8_ETL, recHit_occupancy_VS_eta_Ring9_ETL, recHit_occupancy_VS_eta_Ring10_ETL, recHit_occupancy_VS_eta_Ring11_ETL, "occupancy_recHit_eta_allHitsRings1to11", "ETL Rec Hit #eta", "Occupancy", false, true);
+  makeOccupancyPlotAllRings(c1, recHit_occupancy_VS_energy_Ring1_ETL, recHit_occupancy_VS_energy_Ring2_ETL, recHit_occupancy_VS_energy_Ring3_ETL, recHit_occupancy_VS_energy_Ring4_ETL, recHit_occupancy_VS_energy_Ring5_ETL, recHit_occupancy_VS_energy_Ring6_ETL, recHit_occupancy_VS_energy_Ring7_ETL, recHit_occupancy_VS_energy_Ring8_ETL, recHit_occupancy_VS_energy_Ring9_ETL, recHit_occupancy_VS_energy_Ring10_ETL, recHit_occupancy_VS_energy_Ring11_ETL, "occupancy_recHit_energy_allHitsRings1to11", "Threshold Energy [MeV]", "Occupancy", true);
 }

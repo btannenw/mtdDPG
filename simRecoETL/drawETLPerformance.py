@@ -118,12 +118,12 @@ for det in ["BTL","ETL"]:
     maxE = 50 if det == 'BTL' else 0.5
     histos["recHit_energy_dR05_withTrack"+det]=R.TH1F("recHit_energy_dR05_withTrack"+det,"recHit_energy_dR05_withTrack"+det,50,0.,maxE)
     histos["recHit_energy_dR05_withTrack"+det+"_fixedRange"]=R.TH1F("recHit_energy_dR05_withTrack"+det+"_fixedRange","recHit_energy_dR05_withTrack"+det+"_fixedRange",50,0.,5)
-    maxHitE = 19 if det == 'BTL' else 10
-    histos["recHit_maxEnergy_withTrack"+det]=R.TH1F("recHit_maxEnergy_withTrack"+det,"recHit_maxEnergy_withTrack"+det,50,0.,maxHitE)
-    histos["recHit_maxEnergy_dRpass_withTrack"+det]=R.TH1F("recHit_maxEnergy_dRpass_withTrack"+det,"recHit_maxEnergy_dRpass_withTrack"+det,50,0.,maxHitE)
+    maxHitE = 19 if det == 'BTL' else 3
+    histos["recHit_maxEnergy_withTrack"+det]=R.TH1F("recHit_maxEnergy_withTrack"+det,"recHit_maxEnergy_withTrack"+det,120,0.,maxHitE)
+    histos["recHit_maxEnergy_dRpass_withTrack"+det]=R.TH1F("recHit_maxEnergy_dRpass_withTrack"+det,"recHit_maxEnergy_dRpass_withTrack"+det,120,0.,maxHitE)
     
     # Fig. Occupancy
-    maxE = 10 if det == 'BTL' else 2.5
+    maxE = 10 if det == 'BTL' else 3.0
 
     # occupancy for all rings
     histos["recHit_energy_allHitsAllRings_"+det]=R.TH1F("recHit_energy_allHitsAllRings_"+det,"recHit_energy_allHitsAllRings_"+det, int(maxE*100), 0., maxE)
@@ -214,6 +214,7 @@ for det in ["BTL","ETL"]:
 
 det_id = { 'BTL':1  , 'ETL':2 }
 etaCut = { 'BTL':[0,1.5]  , 'ETL':[1.5,3] }
+modulesPerETLRing = [64, 64, 80, 96, 112, 112, 128, 144, 160, 160, 176]
 
 if (args.dumpAll):
     print "Dumping also non matched MTD hits"
@@ -290,7 +291,13 @@ for ievent,event in enumerate(dh):
                 histos["track_phi_atBTL_overThreshE"].Fill(abs(event.track_phi_atBTL[itrack]))
                 histos["track_pt_atBTL_overThreshE"].Fill(event.track_pt[itrack])
             
-        if (event.track_eta_atETL[itrack]>-100): # extrapolated track hits the ETL
+        if (event.track_eta_atETL[itrack]>-100 and # extrapolated track hits the ETL
+            abs(event.track_eta[itrack])>1.5 and abs(event.track_eta[itrack])<3.0 and event.track_pt[itrack]>0.7 # track quality and acceptance for ETL
+            ):
+
+
+            emptyModulesPerETLRing = list(modulesPerETLRing)
+
             threshold_depositE = 0.03 # MeV
             recHit_matched_totalE_ETL = 0 
             maxRecHitEnergy = 0
@@ -305,13 +312,16 @@ for ievent,event in enumerate(dh):
 
                 histos["recHit_energy_allHitsAllRings_ETL"].Fill(event.recHits_energy[iRecHit])
                 histos["recHit_energy_allHitsRing"+str(event.recHits_rr[iRecHit])+"_ETL"].Fill(event.recHits_energy[iRecHit])
-
+                emptyModulesPerETLRing[event.recHits_rr[iRecHit] - 1] -= 1
+                
                 if (event.recHits_energy[iRecHit] > maxRecHitEnergy):
                     maxRecHitEnergy = event.recHits_energy[iRecHit]
                 if (dR < cut_dR):
                     recHit_matched_totalE_ETL += event.recHits_energy[iRecHit]
                     if (event.recHits_energy[iRecHit] > maxRecHitEnergy_dRpass):
                         maxRecHitEnergy_dRpass = event.recHits_energy[iRecHit]
+
+            # fill histograms after loop
             histos["recHit_energy_dR05_withTrackETL"].Fill(recHit_matched_totalE_ETL)
             histos["recHit_energy_dR05_withTrackETL_fixedRange"].Fill(recHit_matched_totalE_ETL)
             histos["recHit_maxEnergy_withTrackETL"].Fill(maxRecHitEnergy)
@@ -320,6 +330,11 @@ for ievent,event in enumerate(dh):
                 histos["track_eta_atETL_overThreshE"].Fill(abs(event.track_eta_atETL[itrack]))
                 histos["track_phi_atETL_overThreshE"].Fill(abs(event.track_phi_atETL[itrack]))
                 histos["track_pt_atETL_overThreshE"].Fill(event.track_pt[itrack])
+            # fill empty modules into energy plot for occupancy calc
+            histos["recHit_energy_allHitsAllRings_ETL"].SetBinContent(0, sum(emptyModulesPerETLRing) + histos["recHit_energy_allHitsAllRings_ETL"].GetBinContent(0))
+            for iRing in range(1,12):
+                histos["recHit_energy_allHitsRing"+str(iRing)+"_ETL"].SetBinContent(0, emptyModulesPerETLRing[iRing-1] + histos["recHit_energy_allHitsRing"+str(iRing)+"_ETL"].GetBinContent(0))
+
 
         ############################################################################################3
 

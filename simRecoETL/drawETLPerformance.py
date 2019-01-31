@@ -114,6 +114,20 @@ for det in ["BTL","ETL"]:
     maxHitE = 19 if det == 'BTL' else 10
     histos["recHit_maxEnergy_withTrack"+det]=R.TH1F("recHit_maxEnergy_withTrack"+det,"recHit_maxEnergy_withTrack"+det,50,0.,maxHitE)
     histos["recHit_maxEnergy_dRpass_withTrack"+det]=R.TH1F("recHit_maxEnergy_dRpass_withTrack"+det,"recHit_maxEnergy_dRpass_withTrack"+det,50,0.,maxHitE)
+    
+    # Fig. Occupancy
+    maxE = 10 if det == 'BTL' else 2.5
+
+    # occupancy for all rings
+    histos["recHit_energy_allHitsAllRings_"+det]=R.TH1F("recHit_energy_allHitsAllRings_"+det,"recHit_energy_allHitsAllRings_"+det, int(maxE*100), 0., maxE)
+    histos["h_occupancy_numerator_allHitsAllRings_"+det] = R.TH1F("h_occupancy_numerator_allHitsAllRings_"+det,"h_occupancy_numerator_allHitsAllRings_"+det, int(100*maxE), 0, maxE)
+    histos["h_occupancy_denominator_allHitsAllRings_"+det] = R.TH1F("h_occupancy_denominator_allHitsAllRings_"+det,"h_occupancy_denominator_allHitsAllRings_"+det, int(100*maxE), 0, maxE)
+    # occupancy split by ring
+    for iRing in range(1,12):
+        histos["recHit_energy_allHitsRing"+str(iRing)+"_"+det]=R.TH1F("recHit_energy_allHitsRing"+str(iRing)+"_"+det,"recHit_energy_allHitsRing"+str(iRing)+"_"+det, int(100*maxE), 0, maxE)
+        histos["h_occupancy_numerator_allHitsRing"+str(iRing)+"_"+det] = R.TH1F("h_occupancy_numerator_allHitsRing"+str(iRing)+"_"+det,"h_occupancy_numerator_allHitsRing"+str(iRing)+"_"+det, int(100*maxE), 0, maxE)
+        histos["h_occupancy_denominator_allHitsRing"+str(iRing)+"_"+det] = R.TH1F("h_occupancy_denominator_allHitsRing"+str(iRing)+"_"+det,"h_occupancy_denominator_allHitsRing"+str(iRing)+"_"+det, int(100*maxE), 0, maxE)
+
 
 
     # Paolo + Ang
@@ -237,7 +251,7 @@ for ievent,event in enumerate(dh):
 
         ############################################################################################3
         # BBT, 01-25-19
-        cut_dR = 0.02
+        cut_dR = 0.05
         threshold_depositE = 0 # MeV
         if (event.track_eta_atBTL[itrack]>-100.):  #if the extrapolated track hits the BTL
             threshold_depositE = 3 # MeV
@@ -249,9 +263,15 @@ for ievent,event in enumerate(dh):
             histos["track_pt_atBTL"].Fill(event.track_pt[itrack])
             for iRecHit in range(0,event.recHits_n):   #loop over all recHits
                 dR= M.sqrt(pow((event.track_eta_atBTL[itrack]-event.recHits_eta[iRecHit]),2)+pow(event.track_phi_atBTL[itrack]-event.recHits_phi[iRecHit],2))
-                if (event.recHits_det[iRecHit]==1 and event.recHits_energy[iRecHit] > maxRecHitEnergy):
+                if (event.recHits_det[iRecHit]!=1):
+                    continue
+
+                histos["recHit_energy_allHitsAllRings_BTL"].Fill(event.recHits_energy[iRecHit])
+                #histos["recHit_energy_allHitsRing"+str(event.recHits_rr[iRecHit])+"_BTL"].Fill(event.recHits_energy[iRecHit])
+                
+                if (event.recHits_energy[iRecHit] > maxRecHitEnergy):
                     maxRecHitEnergy = event.recHits_energy[iRecHit]
-                if(event.recHits_det[iRecHit]==1 and dR < cut_dR):
+                if(dR < cut_dR):
                     recHit_matched_totalE_BTL += event.recHits_energy[iRecHit]
                     if (event.recHits_energy[iRecHit] > maxRecHitEnergy_dRpass):
                         maxRecHitEnergy_dRpass = event.recHits_energy[iRecHit]
@@ -273,9 +293,15 @@ for ievent,event in enumerate(dh):
             histos["track_pt_atETL"].Fill(event.track_pt[itrack])
             for iRecHit in range(0,event.recHits_n):   #loop over all recHits
                 dR= M.sqrt(pow((event.track_eta_atETL[itrack]-event.recHits_eta[iRecHit]),2)+pow(event.track_phi_atETL[itrack]-event.recHits_phi[iRecHit],2))
-                if (event.recHits_det[iRecHit]==2 and event.recHits_energy[iRecHit] > maxRecHitEnergy):
+                if (event.recHits_det[iRecHit]!=2):
+                    continue
+
+                histos["recHit_energy_allHitsAllRings_ETL"].Fill(event.recHits_energy[iRecHit])
+                histos["recHit_energy_allHitsRing"+str(event.recHits_rr[iRecHit])+"_ETL"].Fill(event.recHits_energy[iRecHit])
+
+                if (event.recHits_energy[iRecHit] > maxRecHitEnergy):
                     maxRecHitEnergy = event.recHits_energy[iRecHit]
-                if(event.recHits_det[iRecHit]==2 and dR < cut_dR):
+                if (dR < cut_dR):
                     recHit_matched_totalE_ETL += event.recHits_energy[iRecHit]
                     if (event.recHits_energy[iRecHit] > maxRecHitEnergy_dRpass):
                         maxRecHitEnergy_dRpass = event.recHits_energy[iRecHit]
@@ -477,6 +503,24 @@ for det in ["BTL","ETL"]:
     histos["track_pt_at"+det]=R.TGraphAsymmErrors( histos["track_pt_at"+det+"_overThreshE"], histos["track_pt_at"+det])
     histos["track_eta_at"+det]=R.TGraphAsymmErrors( histos["track_eta_at"+det+"_overThreshE"], histos["track_eta_at"+det])
     histos["track_phi_at"+det]=R.TGraphAsymmErrors( histos["track_phi_at"+det+"_overThreshE"], histos["track_phi_at"+det])
+
+    # still BBT, but occupancy stuff now
+    for bin in range(0, histos["recHit_energy_allHitsAllRings_"+det].GetXaxis().GetNbins()):        
+        histos["h_occupancy_numerator_allHitsAllRings_"+det].SetBinContent( bin, histos["recHit_energy_allHitsAllRings_"+det].Integral(bin, histos["recHit_energy_allHitsAllRings_"+det].GetXaxis().GetNbins()+1) )
+        histos["h_occupancy_denominator_allHitsAllRings_"+det].SetBinContent( bin, histos["recHit_energy_allHitsAllRings_"+det].Integral(0, histos["recHit_energy_allHitsAllRings_"+det].GetXaxis().GetNbins()+1) )
+        if det == "ETL": # occupancy split by ring
+            for iRing in range(1,12):
+                histos["h_occupancy_numerator_allHitsRing"+str(iRing)+"_"+det].SetBinContent( bin, histos["recHit_energy_allHitsRing"+str(iRing)+"_"+det].Integral(bin, histos["recHit_energy_allHitsRing"+str(iRing)+"_"+det].GetXaxis().GetNbins()+1) )
+                histos["h_occupancy_denominator_allHitsRing"+str(iRing)+"_"+det].SetBinContent( bin, histos["recHit_energy_allHitsRing"+str(iRing)+"_"+det].Integral(0, histos["recHit_energy_allHitsRing"+str(iRing)+"_"+det].GetXaxis().GetNbins()+1) )
+
+    histos["recHit_occupancy_VS_energy_allRings_"+det]=R.TGraphAsymmErrors( histos["h_occupancy_numerator_allHitsAllRings_"+det], histos["h_occupancy_denominator_allHitsAllRings_"+det] )
+    histos["recHit_occupancy_VS_energy_allRings_"+det].SetTitle("recHit_occupancy_VS_energy_allRings_"+det)
+    histos["recHit_occupancy_VS_energy_allRings_"+det].SetName("recHit_occupancy_VS_energy_allRings_"+det)
+    if det == "ETL": # occupancy split by ring
+        for iRing in range(1,12):
+            histos["recHit_occupancy_VS_energy_Ring"+str(iRing)+"_"+det]=R.TGraphAsymmErrors( histos["h_occupancy_numerator_allHitsRing"+str(iRing)+"_"+det], histos["h_occupancy_denominator_allHitsRing"+str(iRing)+"_"+det] )
+            histos["recHit_occupancy_VS_energy_Ring"+str(iRing)+"_"+det].SetTitle("recHit_occupancy_VS_energy_Ring"+str(iRing)+"_"+det)
+            histos["recHit_occupancy_VS_energy_Ring"+str(iRing)+"_"+det].SetName("recHit_occupancy_VS_energy_Ring"+str(iRing)+"_"+det)
 
 histos["effMtd_pt"]= R.TGraphAsymmErrors(histos["mtdTrack_pt"],histos["track_pt"])
 histos["effMtd_eta"]=R.TGraphAsymmErrors(histos["mtdTrack_eta"],histos["track_eta"])

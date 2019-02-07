@@ -2,3 +2,6 @@
 test_*
 *.tar.gz
 docker_stderror
+minBias14TeV_*
+singleMuon_*
+singlePion_*

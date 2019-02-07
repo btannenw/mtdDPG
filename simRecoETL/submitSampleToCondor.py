@@ -66,7 +66,7 @@ if ( not os.path.exists(os.path.expandvars("$X509_USER_PROXY")) ):
 # *** 1. Create .tar of directory and store in personal EOS
 print "##########     Tarring workdir     ##########"
 tarball_name = "{0}.tar.gz".format(args.outputDir)
-os.system("tar -cvzf {0} ./ --exclude 'dpg*' --exclude '.git' --exclude 'test*' --exclude 'submitOneFile_' --exclude '*.tar.gz' --exclude 'minBias*' --exclude 'single*' --exclude '*-19' --exclude '*2019'  --exclude 'quick*' --exclude '*.*~' --exclude 'oldFilelists' --exclude 'fileLists*'".format(tarball_name))
+os.system("tar -cvzf {0} ./ --exclude 'dpg*' --exclude '.git' --exclude 'test*' --exclude 'submitOneFile_' --exclude '*.tar.gz' --exclude 'minBias*' --exclude 'single*' --exclude '*-19' --exclude '*2019'  --exclude 'quick*' --exclude '*.*~' --exclude 'nuGun*' --exclude 'oldFilelists' --exclude 'fileLists*'".format(tarball_name))
 if ( not os.path.exists("/eos/uscms/store/user/benjtann/{0}/".format(args.outputDir)) ):
     os.system("mkdir /eos/uscms/store/user/benjtann/{0}/".format(args.outputDir))
 os.system("xrdcp {0} root://cmseos.fnal.gov//store/user/benjtann/{1}/".format(tarball_name, args.outputDir))

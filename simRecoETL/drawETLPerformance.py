@@ -7,16 +7,16 @@ import os
 # usage: e.g. 
 #               python drawETLPerformance2.py --inputDir=/eos/user/b/btannenw/MTD/10_4_0_mtd3_runHitsRelValMinBias14TeVnoPU-v1V7_r2/190123_041856/0000/ --pattern='DumpHits_10.*' --output=dpg_01-30-19/minBias14TeV_noPU_v4.root --layout=barzflat
 
-def goodTrack(evt, itrack , chi2cut):
+def goodTrack(evt, itrack , chi2cut, skipMCmatching):
     #acceptance cuts
     if (evt.track_pt[itrack]<0.7):
         return False
     if (abs(evt.track_eta[itrack])>3.):
         return False
     #for the moment use matching with mc gen particle
-    if (abs(evt.track_mcMatch_DR[itrack])>0.05):
+    if (abs(evt.track_mcMatch_DR[itrack])>0.05 and not skipMCmatching):
         return False
-    if (abs(evt.track_pt[itrack]/evt.track_mcMatch_genPt[itrack]-1.)>0.1):
+    if (abs(evt.track_pt[itrack]/evt.track_mcMatch_genPt[itrack]-1.)>0.1 and not skipMCmatching):
         return False
 #    if (evt.track_normalizedChi2[itrack] > chi2cut):
 #        return False
@@ -106,7 +106,7 @@ for det in ["BTL","ETL"]:
     #histos["recHit_readoutEnergy_"+det]=R.TH1F("track__readoutEnergy_"+det,"track_readoutEnergy_"+det,40,0,10)
 
     # Fig 1.7
-    minEta = 0 if det == 'BTL' else 1.5
+    minEta = 0 if det == 'BTL' else 1.6
     maxEta = 1.4 if det == 'BTL' else 2.9
     histos["track_eta_at"+det]=R.TH1F("track_eta_at"+det,"track_eta_at"+det,30,minEta,maxEta)
     histos["track_eta_at"+det+"_overThreshE"]=R.TH1F("track_eta_at"+det+"_overThreshE","track_eta_at"+det+"_overThreshE",30,minEta,maxEta)
@@ -115,6 +115,8 @@ for det in ["BTL","ETL"]:
     # Fig 1.8
     histos["track_pt_at"+det]=R.TH1F("track_pt_at"+det,"track_pt_at"+det,30,0.,10)
     histos["track_pt_at"+det+"_overThreshE"]=R.TH1F("track_pt_at"+det+"_overThreshE","track_pt_at"+det+"_overThreshE",30,0.,10)
+    #histos["track_pt_at"+det+"_reweighted"]=R.TH1F("track_pt_at"+det+"_reweighted","track_pt_at"+det+"_reweighted",30,0.,10)
+    #histos["track_pt_at"+det+"_overThreshE_reweighted"]=R.TH1F("track_pt_at"+det+"_overThreshE_reweighted","track_pt_at"+det+"_overThreshE_reweighted",30,0.,10)
     # Fig 1.7
     maxE = 50 if det == 'BTL' else 1.5
     histos["recHit_energy_dR05_withTrack"+det]=R.TH1F("recHit_energy_dR05_withTrack"+det,"recHit_energy_dR05_withTrack"+det,50,0.,maxE)
@@ -131,18 +133,18 @@ for det in ["BTL","ETL"]:
     histos["recHit_energy_divByNModules_allHitsAllRings_"+det]=R.TH1F("recHit_energy_divByNModules_allHitsAllRings_"+det,"recHit_energy_divByNModules_allHitsAllRings_"+det, int(maxE*100), 0., maxE)
     histos["h_occupancy_numerator_allHitsAllRings_"+det] = R.TH1F("h_occupancy_numerator_allHitsAllRings_"+det,"h_occupancy_numerator_allHitsAllRings_"+det, int(100*maxE), 0, maxE)
     histos["h_occupancy_denominator_allHitsAllRings_"+det] = R.TH1F("h_occupancy_denominator_allHitsAllRings_"+det,"h_occupancy_denominator_allHitsAllRings_"+det, int(100*maxE), 0, maxE)
-    histos["recHit_eta_allHitsAllRings_"+det]=R.TH1F("recHit_eta_allHitsAllRings_"+det,"recHit_eta_allHitsAllRings_"+det, 100, minEta, maxEta+0.1)
-    histos["h_occupancy_eta_numerator_allHitsAllRings_"+det] = R.TH1F("h_occupancy_eta_numerator_allHitsAllRings_"+det,"h_occupancy_eta_numerator_allHitsAllRings_"+det, 100, minEta, maxEta+0.1)
-    histos["h_occupancy_eta_denominator_allHitsAllRings_"+det] = R.TH1F("h_occupancy_eta_denominator_allHitsAllRings_"+det,"h_occupancy_eta_denominator_allHitsAllRings_"+det, 100, minEta, maxEta+0.1)
+    histos["recHit_eta_allHitsAllRings_"+det]=R.TH1F("recHit_eta_allHitsAllRings_"+det,"recHit_eta_allHitsAllRings_"+det, 100, minEta-0.1, maxEta+0.1)
+    histos["h_occupancy_eta_numerator_allHitsAllRings_"+det] = R.TH1F("h_occupancy_eta_numerator_allHitsAllRings_"+det,"h_occupancy_eta_numerator_allHitsAllRings_"+det, 100, minEta-0.1, maxEta+0.1)
+    histos["h_occupancy_eta_denominator_allHitsAllRings_"+det] = R.TH1F("h_occupancy_eta_denominator_allHitsAllRings_"+det,"h_occupancy_eta_denominator_allHitsAllRings_"+det, 100, minEta-0.1, maxEta+0.1)
     # occupancy split by ring
     for iRing in range(1,12):
         histos["recHit_energy_allHitsRing"+str(iRing)+"_"+det]=R.TH1F("recHit_energy_allHitsRing"+str(iRing)+"_"+det,"recHit_energy_allHitsRing"+str(iRing)+"_"+det, int(100*maxE), 0, maxE)
         histos["recHit_energy_divByNModules_allHitsRing"+str(iRing)+"_"+det]=R.TH1F("recHit_energy_divByNModules_allHitsRing"+str(iRing)+"_"+det,"recHit_energy_divByNModules_allHitsRing"+str(iRing)+"_"+det, int(100*maxE), 0, maxE)
         histos["h_occupancy_numerator_allHitsRing"+str(iRing)+"_"+det] = R.TH1F("h_occupancy_numerator_allHitsRing"+str(iRing)+"_"+det,"h_occupancy_numerator_allHitsRing"+str(iRing)+"_"+det, int(100*maxE), 0, maxE)
         histos["h_occupancy_denominator_allHitsRing"+str(iRing)+"_"+det] = R.TH1F("h_occupancy_denominator_allHitsRing"+str(iRing)+"_"+det,"h_occupancy_denominator_allHitsRing"+str(iRing)+"_"+det, int(100*maxE), 0, maxE)
-        histos["recHit_eta_allHitsRing"+str(iRing)+"_"+det]=R.TH1F("recHit_eta_allHitsRing"+str(iRing)+"_"+det,"recHit_eta_allHitsRing"+str(iRing)+"_"+det, 100, minEta, maxEta+0.1)
-        histos["h_occupancy_eta_numerator_allHitsRing"+str(iRing)+"_"+det] = R.TH1F("h_occupancy_eta_numerator_allHitsRing"+str(iRing)+"_"+det,"h_occupancy_eta_numerator_allHitsRing"+str(iRing)+"_"+det, 100, minEta, maxEta+0.1)
-        histos["h_occupancy_eta_denominator_allHitsRing"+str(iRing)+"_"+det] = R.TH1F("h_occupancy_eta_denominator_allHitsRing"+str(iRing)+"_"+det,"h_occupancy_eta_denominator_allHitsRing"+str(iRing)+"_"+det, 100, minEta, maxEta+0.1)
+        histos["recHit_eta_allHitsRing"+str(iRing)+"_"+det]=R.TH1F("recHit_eta_allHitsRing"+str(iRing)+"_"+det,"recHit_eta_allHitsRing"+str(iRing)+"_"+det, 100, minEta-0.1, maxEta+0.1)
+        histos["h_occupancy_eta_numerator_allHitsRing"+str(iRing)+"_"+det] = R.TH1F("h_occupancy_eta_numerator_allHitsRing"+str(iRing)+"_"+det,"h_occupancy_eta_numerator_allHitsRing"+str(iRing)+"_"+det, 100, minEta-0.1, maxEta+0.1)
+        histos["h_occupancy_eta_denominator_allHitsRing"+str(iRing)+"_"+det] = R.TH1F("h_occupancy_eta_denominator_allHitsRing"+str(iRing)+"_"+det,"h_occupancy_eta_denominator_allHitsRing"+str(iRing)+"_"+det, 100, minEta-0.1, maxEta+0.1)
         
         
         
@@ -274,7 +276,8 @@ for ievent,event in enumerate(dh):
         n_recHits_BTL = 0
         n_recHits_ETL = 0
 
-        if (not goodTrack(event,itrack,args.chi2cut)):
+        isNuGun = True if args.input.find("nuGun")>0 else False
+        if (not goodTrack(event,itrack,args.chi2cut, isNuGun)):
             continue
 
         ############################################################################################3

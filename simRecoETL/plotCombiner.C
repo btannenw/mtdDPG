@@ -286,8 +286,8 @@ TGraphAsymmErrors* returnOccupancyCurve(TFile* f0, string s_recHitEnergy_ringN, 
     {
       h_occupancy_denominator->SetBinContent( iBin, totalModules*h_nEvents->GetEntries() );
       double numerator = isEta ? h_recHitEnergy_ringN->GetBinContent(iBin) : h_recHitEnergy_ringN->Integral(iBin, h_recHitEnergy_ringN->GetXaxis()->GetNbins()+1);
-      if (is200PU) 
-	numerator = 200*numerator < totalModules*h_nEvents->GetEntries() ? 200*numerator : totalModules*h_nEvents->GetEntries();
+      //if (is200PU) 
+      //numerator = 200*numerator < totalModules*h_nEvents->GetEntries() ? 200*numerator : totalModules*h_nEvents->GetEntries();
       h_occupancy_numerator->SetBinContent  ( iBin, numerator ) ;
 
 
@@ -460,10 +460,11 @@ void makeOccupancyPlotAllRings(TCanvas* c0, TGraphAsymmErrors *g_r1, TGraphAsymm
 }
 
 
+
 void plotCombiner()
 {
   // *** 0. Drawing options
-  topDir = "dpg_01-31-19/";
+  topDir = "dpg_02-08-19/";
   TCanvas* c1 = new TCanvas("c1", "c1", 800, 800);
 
   // *** 1. CMS Style
@@ -476,9 +477,9 @@ void plotCombiner()
   lumiTextSize = 0.3;
 
   // *** 2. Files and trees
-  TFile *f_singleMu = new TFile( ("./"+topDir+"/singleMuon_v0_r10_01-31-19.root").c_str(), "READ");
-  TFile *f_singlePi = new TFile( ("./"+topDir+"/singlePion_v0_r10_01-31-19.root").c_str(), "READ");
-  TFile *f_minBias  = new TFile( ("./"+topDir+"/minBias14TeV_v0_r10_01-31-19.root").c_str(), "READ");
+  TFile *f_singleMu = new TFile( ("./"+topDir+"/singleMuon_v1_r0_02-08-19.root").c_str(), "READ");
+  TFile *f_singlePi = new TFile( ("./"+topDir+"/singlePion_v1_r0_02-08-19.root").c_str(), "READ");
+  TFile *f_minBias  = new TFile( ("./"+topDir+"/nuGun200PU_v1_r0_02-08-19.root").c_str(), "READ");
 
   // *** 3. Plots
   TH1D *h_recHit_energy_dR05_ETL_singleMu = (TH1D*)f_singleMu->Get("recHit_energy_dR05_withTrackETL");
@@ -505,7 +506,6 @@ void plotCombiner()
   TH1D *h_recHit_maxEnergy_withTrack_BTL_minBias = (TH1D*)f_minBias->Get("recHit_maxEnergy_withTrackBTL");
   TH1D *h_recHit_maxEnergy_dRpass_withTrack_BTL_minBias = (TH1D*)f_minBias->Get("recHit_maxEnergy_dRpass_withTrackBTL");
 
-  
   TGraphAsymmErrors *g_track_eta_energyThresholdEff_ETL_singleMu = returnTGraphAsymm( f_singleMu, "track_eta_atETL_overThreshE", "track_eta_atETL");
   TGraphAsymmErrors *g_track_phi_energyThresholdEff_ETL_singleMu = returnTGraphAsymm( f_singleMu, "track_phi_atETL_overThreshE", "track_phi_atETL");
   TGraphAsymmErrors *g_track_pt_energyThresholdEff_ETL_singleMu = returnTGraphAsymm( f_singleMu, "track_pt_atETL_overThreshE", "track_pt_atETL");
@@ -526,7 +526,8 @@ void plotCombiner()
   TGraphAsymmErrors *g_track_eta_energyThresholdEff_BTL_minBias = returnTGraphAsymm( f_minBias, "track_eta_atBTL_overThreshE", "track_eta_atBTL");
   TGraphAsymmErrors *g_track_phi_energyThresholdEff_BTL_minBias = returnTGraphAsymm( f_minBias, "track_phi_atBTL_overThreshE", "track_phi_atBTL");
   TGraphAsymmErrors *g_track_pt_energyThresholdEff_BTL_minBias = returnTGraphAsymm( f_minBias, "track_pt_atBTL_overThreshE", "track_pt_atBTL");
-  
+ 
+ 
   // *** 4. Drawing
   compareTwoPlots(c1, h_recHit_energy_dR05_BTL_singleMu, h_recHit_energy_dR05_BTL_singlePi, "h_recHit_energy_BTL", "BTL #Sigma E^{#Delta R < 0.05}_{recHit} [MeV]", "Event Fraction / 1 MeV", true);
   compareTwoPlots(c1, h_recHit_energy_dR05_ETL_singleMu, h_recHit_energy_dR05_ETL_singlePi, "h_recHit_energy_ETL", "ETL #Sigma E^{#Delta R < 0.05}_{recHit} [MeV]", "Event Fraction / 0.01 MeV", true);
@@ -537,7 +538,6 @@ void plotCombiner()
   
   compareTwoPlots(c1, h_recHit_maxEnergy_dRpass_withTrack_BTL_singleMu, h_recHit_maxEnergy_dRpass_withTrack_BTL_singlePi, "h_recHit_maxHitEnergy_dRpass_withTrack_BTL", "BTL Max recHit Energy (#Delta R < 0.05) [MeV]", "Event Fraction / 0.1 MeV", true);
   compareTwoPlots(c1, h_recHit_maxEnergy_dRpass_withTrack_ETL_singleMu, h_recHit_maxEnergy_dRpass_withTrack_ETL_singlePi, "h_recHit_maxHitEnergy_dRpass_withTrack_ETL", "ETL Max recHit Energy (#Delta R < 0.05) [MeV]", "Event Fraction / 0.1 MeV", true);
-
 
   compareThreePlots(c1, h_recHit_energy_dR05_BTL_singleMu, h_recHit_energy_dR05_BTL_singlePi, h_recHit_energy_dR05_BTL_minBias, "h_3_recHit_energy_BTL", "BTL #Sigma E^{#Delta R < 0.05}_{recHit} [MeV]", "Event Fraction / 1 MeV", true);
   compareThreePlots(c1, h_recHit_energy_dR05_ETL_singleMu, h_recHit_energy_dR05_ETL_singlePi, h_recHit_energy_dR05_ETL_minBias, "h_3_recHit_energy_ETL", "ETL #Sigma E^{#Delta R < 0.05}_{recHit} [MeV]", "Event Fraction / 0.01 MeV", true);
@@ -558,7 +558,7 @@ void plotCombiner()
   
 
   // *** 5. Occupancies
-  TGraphAsymmErrors* recHit_occupancy_VS_energy_allRings_ETL_noPU = returnOccupancyCurve(f_minBias, "recHit_energy_allHitsAllRings_ETL", 0, false);
+  /*TGraphAsymmErrors* recHit_occupancy_VS_energy_allRings_ETL_noPU = returnOccupancyCurve(f_minBias, "recHit_energy_allHitsAllRings_ETL", 0, false);
   TGraphAsymmErrors* recHit_occupancy_VS_energy_Ring1_ETL_noPU    = returnOccupancyCurve(f_minBias, "recHit_energy_allHitsRing1_ETL",    1, false);
   TGraphAsymmErrors* recHit_occupancy_VS_energy_Ring2_ETL_noPU    = returnOccupancyCurve(f_minBias, "recHit_energy_allHitsRing2_ETL",    2, false);
   TGraphAsymmErrors* recHit_occupancy_VS_energy_Ring3_ETL_noPU    = returnOccupancyCurve(f_minBias, "recHit_energy_allHitsRing3_ETL",    3, false);
@@ -570,6 +570,7 @@ void plotCombiner()
   TGraphAsymmErrors* recHit_occupancy_VS_energy_Ring9_ETL_noPU    = returnOccupancyCurve(f_minBias, "recHit_energy_allHitsRing9_ETL",    9, false);
   TGraphAsymmErrors* recHit_occupancy_VS_energy_Ring10_ETL_noPU   = returnOccupancyCurve(f_minBias, "recHit_energy_allHitsRing10_ETL",  10, false);
   TGraphAsymmErrors* recHit_occupancy_VS_energy_Ring11_ETL_noPU   = returnOccupancyCurve(f_minBias, "recHit_energy_allHitsRing11_ETL",  11, false);
+  */
 
   TGraphAsymmErrors* recHit_occupancy_VS_energy_allRings_ETL_200PU = returnOccupancyCurve(f_minBias, "recHit_energy_allHitsAllRings_ETL", 0, false, true);
   TGraphAsymmErrors* recHit_occupancy_VS_energy_Ring1_ETL_200PU    = returnOccupancyCurve(f_minBias, "recHit_energy_allHitsRing1_ETL",    1, false, true);
@@ -583,8 +584,8 @@ void plotCombiner()
   TGraphAsymmErrors* recHit_occupancy_VS_energy_Ring9_ETL_200PU    = returnOccupancyCurve(f_minBias, "recHit_energy_allHitsRing9_ETL",    9, false, true);
   TGraphAsymmErrors* recHit_occupancy_VS_energy_Ring10_ETL_200PU   = returnOccupancyCurve(f_minBias, "recHit_energy_allHitsRing10_ETL",  10, false, true);
   TGraphAsymmErrors* recHit_occupancy_VS_energy_Ring11_ETL_200PU   = returnOccupancyCurve(f_minBias, "recHit_energy_allHitsRing11_ETL",  11, false, true);
-
-  TGraphAsymmErrors* recHit_occupancy_VS_eta_allRings_ETL_noPU = returnOccupancyCurve(f_minBias, "recHit_eta_allHitsAllRings_ETL", 0, true);
+  
+  /*TGraphAsymmErrors* recHit_occupancy_VS_eta_allRings_ETL_noPU = returnOccupancyCurve(f_minBias, "recHit_eta_allHitsAllRings_ETL", 0, true);
   TGraphAsymmErrors* recHit_occupancy_VS_eta_Ring1_ETL_noPU    = returnOccupancyCurve(f_minBias, "recHit_eta_allHitsRing1_ETL",    1, true);
   TGraphAsymmErrors* recHit_occupancy_VS_eta_Ring2_ETL_noPU    = returnOccupancyCurve(f_minBias, "recHit_eta_allHitsRing2_ETL",    2, true);
   TGraphAsymmErrors* recHit_occupancy_VS_eta_Ring3_ETL_noPU    = returnOccupancyCurve(f_minBias, "recHit_eta_allHitsRing3_ETL",    3, true);
@@ -596,7 +597,7 @@ void plotCombiner()
   TGraphAsymmErrors* recHit_occupancy_VS_eta_Ring9_ETL_noPU    = returnOccupancyCurve(f_minBias, "recHit_eta_allHitsRing9_ETL",    9, true);
   TGraphAsymmErrors* recHit_occupancy_VS_eta_Ring10_ETL_noPU   = returnOccupancyCurve(f_minBias, "recHit_eta_allHitsRing10_ETL",  10, true);
   TGraphAsymmErrors* recHit_occupancy_VS_eta_Ring11_ETL_noPU   = returnOccupancyCurve(f_minBias, "recHit_eta_allHitsRing11_ETL",  11, true);
-
+  */
   TGraphAsymmErrors* recHit_occupancy_VS_eta_allRings_ETL_200PU = returnOccupancyCurve(f_minBias, "recHit_eta_allHitsAllRings_ETL", 0, true, true);
   TGraphAsymmErrors* recHit_occupancy_VS_eta_Ring1_ETL_200PU    = returnOccupancyCurve(f_minBias, "recHit_eta_allHitsRing1_ETL",    1, true, true);
   TGraphAsymmErrors* recHit_occupancy_VS_eta_Ring2_ETL_200PU    = returnOccupancyCurve(f_minBias, "recHit_eta_allHitsRing2_ETL",    2, true, true);
@@ -609,9 +610,9 @@ void plotCombiner()
   TGraphAsymmErrors* recHit_occupancy_VS_eta_Ring9_ETL_200PU    = returnOccupancyCurve(f_minBias, "recHit_eta_allHitsRing9_ETL",    9, true, true);
   TGraphAsymmErrors* recHit_occupancy_VS_eta_Ring10_ETL_200PU   = returnOccupancyCurve(f_minBias, "recHit_eta_allHitsRing10_ETL",  10, true, true);
   TGraphAsymmErrors* recHit_occupancy_VS_eta_Ring11_ETL_200PU   = returnOccupancyCurve(f_minBias, "recHit_eta_allHitsRing11_ETL",  11, true, true);
-
   
-  makeOccupancyPlot(c1, recHit_occupancy_VS_energy_allRings_ETL_noPU, "occupancy_recHit_energy_allHitsAllRings_noPU", "Threshold Energy [MeV]", "ETL Occupancy", false, true);
+  
+  //makeOccupancyPlot(c1, recHit_occupancy_VS_energy_allRings_ETL_noPU, "occupancy_recHit_energy_allHitsAllRings_noPU", "Threshold Energy [MeV]", "ETL Occupancy", false, true);
   makeOccupancyPlot(c1, recHit_occupancy_VS_energy_allRings_ETL_200PU, "occupancy_recHit_energy_allHitsAllRings_200PU", "Threshold Energy [MeV]", "ETL Occupancy", false, true, true);
   /*makeOccupancyPlot(c1, recHit_occupancy_VS_energy_Ring1_ETL, "occupancy_recHit_energy_allHitsRing1", "Threshold Energy [MeV]", "Occupancy");
   makeOccupancyPlot(c1, recHit_occupancy_VS_energy_Ring2_ETL, "occupancy_recHit_energy_allHitsRing2", "Threshold Energy [MeV]", "Occupancy");
@@ -625,7 +626,7 @@ void plotCombiner()
   makeOccupancyPlot(c1, recHit_occupancy_VS_energy_Ring10_ETL, "occupancy_recHit_energy_allHitsRing10", "Threshold Energy [MeV]", "Occupancy");
   makeOccupancyPlot(c1, recHit_occupancy_VS_energy_Ring11_ETL, "occupancy_recHit_energy_allHitsRing11", "Threshold Energy [MeV]", "Occupancy");  */
 
-  makeOccupancyPlot(c1, recHit_occupancy_VS_eta_allRings_ETL_noPU, "occupancy_recHit_eta_allHitsAllRings_noPU", "ETL Rec Hit #eta", "ETL Occupancy", false, true);
+  //makeOccupancyPlot(c1, recHit_occupancy_VS_eta_allRings_ETL_noPU, "occupancy_recHit_eta_allHitsAllRings_noPU", "ETL Rec Hit #eta", "ETL Occupancy", false, true);
   makeOccupancyPlot(c1, recHit_occupancy_VS_eta_allRings_ETL_200PU, "occupancy_recHit_eta_allHitsAllRings_200PU", "ETL Rec Hit #eta", "ETL Occupancy", false, true, true);
   /*makeOccupancyPlot(c1, recHit_occupancy_VS_eta_Ring1_ETL, "occupancy_recHit_eta_allHitsRing1", "ETL Rec Hit #eta", "Occupancy", false);
   makeOccupancyPlot(c1, recHit_occupancy_VS_eta_Ring2_ETL, "occupancy_recHit_eta_allHitsRing2", "ETL Rec Hit #eta", "Occupancy", false);
@@ -639,8 +640,8 @@ void plotCombiner()
   makeOccupancyPlot(c1, recHit_occupancy_VS_eta_Ring10_ETL, "occupancy_recHit_eta_allHitsRing10", "ETL Rec Hit #eta", "Occupancy", false);
   makeOccupancyPlot(c1, recHit_occupancy_VS_eta_Ring11_ETL, "occupancy_recHit_eta_allHitsRing11", "ETL Rec Hit #eta", "Occupancy", false);  */
 
-  makeOccupancyPlotAllRings(c1, recHit_occupancy_VS_eta_Ring1_ETL_noPU, recHit_occupancy_VS_eta_Ring2_ETL_noPU, recHit_occupancy_VS_eta_Ring3_ETL_noPU, recHit_occupancy_VS_eta_Ring4_ETL_noPU, recHit_occupancy_VS_eta_Ring5_ETL_noPU, recHit_occupancy_VS_eta_Ring6_ETL_noPU, recHit_occupancy_VS_eta_Ring7_ETL_noPU, recHit_occupancy_VS_eta_Ring8_ETL_noPU, recHit_occupancy_VS_eta_Ring9_ETL_noPU, recHit_occupancy_VS_eta_Ring10_ETL_noPU, recHit_occupancy_VS_eta_Ring11_ETL_noPU, "occupancy_recHit_eta_allHitsRings1to11_noPU", "ETL Rec Hit #eta", "ETL Occupancy", false, true, false);
-  makeOccupancyPlotAllRings(c1, recHit_occupancy_VS_energy_Ring1_ETL_noPU, recHit_occupancy_VS_energy_Ring2_ETL_noPU, recHit_occupancy_VS_energy_Ring3_ETL_noPU, recHit_occupancy_VS_energy_Ring4_ETL_noPU, recHit_occupancy_VS_energy_Ring5_ETL_noPU, recHit_occupancy_VS_energy_Ring6_ETL_noPU, recHit_occupancy_VS_energy_Ring7_ETL_noPU, recHit_occupancy_VS_energy_Ring8_ETL_noPU, recHit_occupancy_VS_energy_Ring9_ETL_noPU, recHit_occupancy_VS_energy_Ring10_ETL_noPU, recHit_occupancy_VS_energy_Ring11_ETL_noPU, "occupancy_recHit_energy_allHitsRings1to11_noPU", "Threshold Energy [MeV]", "ETL Occupancy", false, true, false);
+  //makeOccupancyPlotAllRings(c1, recHit_occupancy_VS_eta_Ring1_ETL_noPU, recHit_occupancy_VS_eta_Ring2_ETL_noPU, recHit_occupancy_VS_eta_Ring3_ETL_noPU, recHit_occupancy_VS_eta_Ring4_ETL_noPU, recHit_occupancy_VS_eta_Ring5_ETL_noPU, recHit_occupancy_VS_eta_Ring6_ETL_noPU, recHit_occupancy_VS_eta_Ring7_ETL_noPU, recHit_occupancy_VS_eta_Ring8_ETL_noPU, recHit_occupancy_VS_eta_Ring9_ETL_noPU, recHit_occupancy_VS_eta_Ring10_ETL_noPU, recHit_occupancy_VS_eta_Ring11_ETL_noPU, "occupancy_recHit_eta_allHitsRings1to11_noPU", "ETL Rec Hit #eta", "ETL Occupancy", false, true, false);
+  //makeOccupancyPlotAllRings(c1, recHit_occupancy_VS_energy_Ring1_ETL_noPU, recHit_occupancy_VS_energy_Ring2_ETL_noPU, recHit_occupancy_VS_energy_Ring3_ETL_noPU, recHit_occupancy_VS_energy_Ring4_ETL_noPU, recHit_occupancy_VS_energy_Ring5_ETL_noPU, recHit_occupancy_VS_energy_Ring6_ETL_noPU, recHit_occupancy_VS_energy_Ring7_ETL_noPU, recHit_occupancy_VS_energy_Ring8_ETL_noPU, recHit_occupancy_VS_energy_Ring9_ETL_noPU, recHit_occupancy_VS_energy_Ring10_ETL_noPU, recHit_occupancy_VS_energy_Ring11_ETL_noPU, "occupancy_recHit_energy_allHitsRings1to11_noPU", "Threshold Energy [MeV]", "ETL Occupancy", false, true, false);
 
   makeOccupancyPlotAllRings(c1, recHit_occupancy_VS_eta_Ring1_ETL_200PU, recHit_occupancy_VS_eta_Ring2_ETL_200PU, recHit_occupancy_VS_eta_Ring3_ETL_200PU, recHit_occupancy_VS_eta_Ring4_ETL_200PU, recHit_occupancy_VS_eta_Ring5_ETL_200PU, recHit_occupancy_VS_eta_Ring6_ETL_200PU, recHit_occupancy_VS_eta_Ring7_ETL_200PU, recHit_occupancy_VS_eta_Ring8_ETL_200PU, recHit_occupancy_VS_eta_Ring9_ETL_200PU, recHit_occupancy_VS_eta_Ring10_ETL_200PU, recHit_occupancy_VS_eta_Ring11_ETL_200PU, "occupancy_recHit_eta_allHitsRings1to11_200PU", "ETL Rec Hit #eta", "ETL Occupancy", false, true, true);
   makeOccupancyPlotAllRings(c1, recHit_occupancy_VS_energy_Ring1_ETL_200PU, recHit_occupancy_VS_energy_Ring2_ETL_200PU, recHit_occupancy_VS_energy_Ring3_ETL_200PU, recHit_occupancy_VS_energy_Ring4_ETL_200PU, recHit_occupancy_VS_energy_Ring5_ETL_200PU, recHit_occupancy_VS_energy_Ring6_ETL_200PU, recHit_occupancy_VS_energy_Ring7_ETL_200PU, recHit_occupancy_VS_energy_Ring8_ETL_200PU, recHit_occupancy_VS_energy_Ring9_ETL_200PU, recHit_occupancy_VS_energy_Ring10_ETL_200PU, recHit_occupancy_VS_energy_Ring11_ETL_200PU, "occupancy_recHit_energy_allHitsRings1to11_200PU", "Threshold Energy [MeV]", "ETL Occupancy", false, true, true);

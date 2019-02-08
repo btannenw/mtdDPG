@@ -3,5 +3,6 @@ test_*
 *.tar.gz
 docker_stderror
 minBias14TeV_*
+nuGun200PU_*
 singleMuon_*
 singlePion_*

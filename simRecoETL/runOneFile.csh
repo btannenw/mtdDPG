@@ -1,7 +1,7 @@
 #!/bin/bash
 source /cvmfs/sft.cern.ch/lcg/views/LCG_89/x86_64-slc6-gcc62-opt/setup.sh
 cd ${_CONDOR_SCRATCH_DIR}
-xrdcp -s root://cmseos.fnal.gov//store/user/benjtann/condor_tarballs/$6 .
+xrdcp -s root://cmseos.fnal.gov//store/user/benjtann/$3/$6 .
 tar -xf $6
 rm $6
 

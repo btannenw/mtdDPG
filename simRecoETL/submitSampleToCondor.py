@@ -11,9 +11,11 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--outputDir", help="output directory for processed histograms and roofiles")
 parser.add_argument("--inputTXTfile", help=".txt file containing list of input files for a given sample")
 parser.add_argument("--layout", help="Layout of BTL crystals. probably always want barzflat")
+parser.add_argument("--events", help="Total number of events per job", default='-1')
+parser.add_argument("--firstEvent", help="First event to analyze", default='0')
 args = parser.parse_args()
 
-if (len(vars(args)) != 3): # 4 --> four: one for each options
+if (len(vars(args)) != 5): # 4 --> four: one for each options
     os.system('python submitSampleToCondor.py -h')
     quit()
 
@@ -46,7 +48,7 @@ else:
     else:
         print '-- Setting inputTXTfile = {0}'.format(args.inputTXTfile)
 
-# ** C. Test isMC flag and exit if not sensible
+# ** C. Test layout flag and exit if not sensible
 if(args.layout is None):
     print "#### Need to specify BTL layout using --layout <barzflat/tile/other> ####\nEXITING"
     quit()
@@ -57,7 +59,28 @@ else:
     else:
         print '-- Setting BTL layout = {0}'.format(args.layout)
 
-# ** D. Exit if no grid proxy
+
+# ** D. Test events flag and use standard value if not sensible or missing
+if(args.events is None):
+    print "#### No number of events to run over specified. Using -1 as default ####\n"
+else:
+    if ( args.events != "-1" ):
+        print "#### Specified number of events to run over: {0} ####.\n".format(args.events)
+    else:
+        print '-- Setting events = {0}'.format(args.events)
+
+
+# ** E. Test firstEvent flag and use standard value if not sensible or missing
+if(args.firstEvent is None):
+    print "#### No value passed for firstEvent to analyze. Using 0 as default ####\n"
+else:
+    if ( args.firstEvent != "0" ):
+        print "#### Specified first event number to start with: {0} ####.\n".format(args.firstEvent)
+    else:
+        print '-- Setting firstEvent = {0}'.format(args.firstEvent)
+
+
+# ** F. Exit if no grid proxy
 if ( not os.path.exists(os.path.expandvars("$X509_USER_PROXY")) ):
     print "#### No GRID PROXY detected. Please do voms-proxy-init -voms cms before submitting Condor jobs ####.\nEXITING"
     quit()
@@ -66,12 +89,11 @@ if ( not os.path.exists(os.path.expandvars("$X509_USER_PROXY")) ):
 # *** 1. Create .tar of directory and store in personal EOS
 print "##########     Tarring workdir     ##########"
 tarball_name = "{0}.tar.gz".format(args.outputDir)
-os.system("tar -cvzf {0} ./ --exclude 'dpg*' --exclude '.git' --exclude 'test*' --exclude 'submitOneFile_' --exclude '*.tar.gz' --exclude 'minBias*' --exclude 'single*' --exclude '*-19' --exclude '*2019'  --exclude 'quick*' --exclude '*.*~' --exclude 'nuGun*' --exclude 'oldFilelists' --exclude 'fileLists*'".format(tarball_name))
+os.system("tar -cvzf {0} ./ --exclude 'dpg*' --exclude '.git' --exclude 'test*' --exclude 'submitOneFile_' --exclude '*.tar.gz' --exclude 'minBias*' --exclude 'single*' --exclude '*-19' --exclude '*2019'  --exclude 'quickF*' --exclude '*.*~' --exclude 'nuGun*' --exclude 'oldFilelists' --exclude 'fileLists*'".format(tarball_name))
 if ( not os.path.exists("/eos/uscms/store/user/benjtann/{0}/".format(args.outputDir)) ):
     os.system("mkdir /eos/uscms/store/user/benjtann/{0}/".format(args.outputDir))
 os.system("xrdcp {0} root://cmseos.fnal.gov//store/user/benjtann/{1}/".format(tarball_name, args.outputDir))
-#os.system("xrdcp {0} root://cmseos.fnal.gov//store/user/benjtann/{0}/{1}".format(tarball_name, args.outputDir))
-#os.system("rm {0}".format(tarball_name))
+
 
 # *** 2. Create temporary .pdl file for condor submission
 print "\n##########     Submitting Condor jobs     ##########\n"
@@ -79,9 +101,11 @@ txtfile = open(args.inputTXTfile, 'r')
 
 for line in txtfile:
     number = (line.rsplit('_',1))[1].split('.root')[0] # get number of file
+    if args.firstEvent != "0":
+        number = number + "-" + args.firstEvent
+
     infile = line.split('\n')[0]
     inputDir = infile.split('DumpHits')[0]
-    pattern  = 'DumpHits' + infile.split('DumpHits')[1]
     #print number, infile, inputDir, pattern
     jdl_filename = "submitOneFile_{0}_{1}.jdl".format(args.outputDir, number)
 
@@ -95,7 +119,8 @@ for line in txtfile:
     os.system("echo Error = {0}/condor_err/outfile_{1}.err >> {2}".format(args.outputDir, number, jdl_filename))
     os.system("echo Log = {0}/condor_logs/outfile_{1}.log >> {2}".format(args.outputDir, number, jdl_filename))
     os.system("echo x509userproxy = ${{X509_USER_PROXY}} >> {0}".format(jdl_filename))
-    os.system("echo Arguments = {0} {1} {2} {3} {4} {5} >> {6}".format(infile, pattern, args.outputDir, number, args.layout, tarball_name, jdl_filename))
+    #os.system("echo Arguments = {0} {1} {2} {3} {4} >> {5}".format(infile, args.outputDir, number, args.layout, tarball_name, jdl_filename))
+    os.system("echo Arguments = {0} {1} {2} {3} {4} {5} {6} >> {7}".format(infile, args.outputDir, number, args.layout, args.events, args.firstEvent, tarball_name, jdl_filename))
     os.system("echo Queue 1 >> {0}".format(jdl_filename))   
 
     

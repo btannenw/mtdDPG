@@ -89,18 +89,24 @@ for det in ["BTL","ETL"]:
     #histos["recHit_readoutEnergy_"+det]=R.TH1F("track__readoutEnergy_"+det,"track_readoutEnergy_"+det,40,0,10)
     #histos["recHit_readoutEnergy_"+det]=R.TH1F("track__readoutEnergy_"+det,"track_readoutEnergy_"+det,40,0,10)
 
-    # Fig 1.7
+    # Fig 1.7+1.8
     minEta = 0 if det == 'BTL' else 1.6
     maxEta = 1.4 if det == 'BTL' else 2.9
     histos["track_eta_at"+det]=R.TH1F("track_eta_at"+det,"track_eta_at"+det,30,minEta,maxEta)
     histos["track_eta_at"+det+"_overThreshE"]=R.TH1F("track_eta_at"+det+"_overThreshE","track_eta_at"+det+"_overThreshE",30,minEta,maxEta)
     histos["track_phi_at"+det]=R.TH1F("track_phi_at"+det,"track_phi_at"+det,30,0,M.pi)
     histos["track_phi_at"+det+"_overThreshE"]=R.TH1F("track_phi_at"+det+"_overThreshE","track_phi_at"+det+"_overThreshE",30,0,M.pi)
-    # Fig 1.8
     histos["track_pt_at"+det]=R.TH1F("track_pt_at"+det,"track_pt_at"+det,30,0.,10)
     histos["track_pt_at"+det+"_overThreshE"]=R.TH1F("track_pt_at"+det+"_overThreshE","track_pt_at"+det+"_overThreshE",30,0.,10)
-    #histos["track_pt_at"+det+"_reweighted"]=R.TH1F("track_pt_at"+det+"_reweighted","track_pt_at"+det+"_reweighted",30,0.,10)
-    #histos["track_pt_at"+det+"_overThreshE_reweighted"]=R.TH1F("track_pt_at"+det+"_overThreshE_reweighted","track_pt_at"+det+"_overThreshE_reweighted",30,0.,10)
+
+    histos["track_eta_at"+det+"_reweight"]=R.TH1F("track_eta_at"+det+"_reweight","track_eta_at"+det+"_reweight",30,minEta,maxEta)
+    histos["track_eta_at"+det+"_reweight_overThreshE"]=R.TH1F("track_eta_at"+det+"_reweight_overThreshE","track_eta_at"+det+"_reweight_overThreshE",30,minEta,maxEta)
+    histos["track_phi_at"+det+"_reweight"]=R.TH1F("track_phi_at"+det+"_reweight","track_phi_at"+det+"_reweight",30,0,M.pi)
+    histos["track_phi_at"+det+"_reweight_overThreshE"]=R.TH1F("track_phi_at"+det+"_reweight_overThreshE","track_phi_at"+det+"_reweight_overThreshE",30,0,M.pi)
+    histos["track_pt_at"+det+"_reweight"]=R.TH1F("track_pt_at"+det+"_reweight","track_pt_at"+det+"_reweight",30,0.,10)
+    histos["track_pt_at"+det+"_reweight_overThreshE"]=R.TH1F("track_pt_at"+det+"_reweight_overThreshE","track_pt_at"+det+"_reweight_overThreshE",30,0.,10)
+
+    
     # Fig 1.7
     maxE = 50 if det == 'BTL' else 1.5
     histos["recHit_energy_dR05_withTrack"+det]=R.TH1F("recHit_energy_dR05_withTrack"+det,"recHit_energy_dR05_withTrack"+det,50,0.,maxE)
@@ -146,6 +152,10 @@ etaCut = { 'BTL':[0,1.5]  , 'ETL':[1.5,3] }
 modulesPerETLRing = [64., 64., 80., 96., 112., 112., 128., 144., 160., 160., 176.]
 thresholdEnergy = { 'BTL': 3  , 'ETL': 0.015 } # MeV
 
+singleMu_trackPtAtETL_weights = { 1:0 , 2:0 , 3:13.3733 , 4:6.10089 , 5:3.31314 , 6:1.60481 , 7:1.00255 , 8:0.59895 , 9:0.372216 , 10:0.21744 , 11:0.137574 , 12:0.0875561 , 13:0.0612986 , 14:0.0484957 , 15:0.0336223 , 16:0.0226924 , 17:0.0178273 , 18:0.0135571 , 19:0.00864238 , 20:0.00776581 , 21:0.00642448 , 22:0.00476772 , 23:0.00304024 , 24:0.00403177 , 25:0.00327606 , 26:0.00196983 , 27:0.00225542 , 28:0.00145646 , 29:0.00182964 , 30:0.0224877 } 
+singlePi_trackPtAtETL_weights = { 1:0 , 2:0 , 3:16.8581 , 4:6.49493 , 5:3.4822 , 6:1.64186 , 7:0.950607 , 8:0.631338 , 9:0.344325 , 10:0.243136 , 11:0.16214 , 12:0.0969625 , 13:0.0645502 , 14:0.0460892 , 15:0.0290301 , 16:0.0219781 , 17:0.0173903 , 18:0.0135819 , 19:0.00929119 , 20:0.00654508 , 21:0.00687348 , 22:0.00438949 , 23:0.00330055 , 24:0.00391885 , 25:0.00317265 , 26:0.0020943 , 27:0.00195157 , 28:0.00122565 , 29:0.00166819 , 30:0.0223251 } 
+
+ 
 if (args.dumpAll):
     print "Dumping also non matched MTD hits"
 
@@ -269,6 +279,18 @@ for ievent,event in enumerate(dh):
             histos["track_eta_atETL"].Fill(abs(event.track_eta_atETL[itrack]))
             histos["track_phi_atETL"].Fill(abs(event.track_phi_atETL[itrack]))
             histos["track_pt_atETL"].Fill(event.track_pt[itrack])
+            ptBin = histos["track_pt_atETL"].FindBin(event.track_pt[itrack]) if histos["track_pt_atETL"].FindBin(event.track_pt[itrack]) <= 30 else 30
+            #print histos["track_pt_atETL"].FindBin(event.track_pt[itrack]), ptBin, event.track_pt[itrack]
+            if args.input.find("SingleMu")>0:
+                histos["track_eta_atETL_reweight"].Fill(abs(event.track_eta_atETL[itrack]), singleMu_trackPtAtETL_weights[ ptBin ] )
+                histos["track_phi_atETL_reweight"].Fill(abs(event.track_phi_atETL[itrack]), singleMu_trackPtAtETL_weights[ ptBin ] )
+                histos["track_pt_atETL_reweight"].Fill(event.track_pt[itrack], singleMu_trackPtAtETL_weights[ ptBin ] )
+            if args.input.find("SinglePi")>0:
+                histos["track_eta_atETL_reweight"].Fill(abs(event.track_eta_atETL[itrack]), singlePi_trackPtAtETL_weights[ ptBin ] )
+                histos["track_phi_atETL_reweight"].Fill(abs(event.track_phi_atETL[itrack]), singlePi_trackPtAtETL_weights[ ptBin ] )
+                histos["track_pt_atETL_reweight"].Fill(event.track_pt[itrack], singlePi_trackPtAtETL_weights[ ptBin ] )
+
+            
             for iRecHit in range(0,event.recHits_n):   #loop over all recHits
                 dR= M.sqrt(pow((event.track_eta_atETL[itrack]-event.recHits_eta[iRecHit]),2)+pow(event.track_phi_atETL[itrack]-event.recHits_phi[iRecHit],2))
                 if (event.recHits_det[iRecHit]!=det_id["ETL"]):
@@ -293,6 +315,15 @@ for ievent,event in enumerate(dh):
                 histos["track_eta_atETL_overThreshE"].Fill(abs(event.track_eta_atETL[itrack]))
                 histos["track_phi_atETL_overThreshE"].Fill(abs(event.track_phi_atETL[itrack]))
                 histos["track_pt_atETL_overThreshE"].Fill(event.track_pt[itrack])
+                ptBin = histos["track_pt_atETL"].FindBin(event.track_pt[itrack]) if histos["track_pt_atETL"].FindBin(event.track_pt[itrack]) <= 30 else 30
+                if args.input.find("SingleMu")>0:
+                    histos["track_eta_atETL_reweight_overThreshE"].Fill(abs(event.track_eta_atETL[itrack]), singleMu_trackPtAtETL_weights[ ptBin ] )
+                    histos["track_phi_atETL_reweight_overThreshE"].Fill(abs(event.track_phi_atETL[itrack]), singleMu_trackPtAtETL_weights[ ptBin ] )
+                    histos["track_pt_atETL_reweight_overThreshE"].Fill(event.track_pt[itrack], singleMu_trackPtAtETL_weights[ ptBin ] )
+                if args.input.find("SinglePi")>0:
+                    histos["track_eta_atETL_reweight_overThreshE"].Fill(abs(event.track_eta_atETL[itrack]), singlePi_trackPtAtETL_weights[ ptBin ] )
+                    histos["track_phi_atETL_reweight_overThreshE"].Fill(abs(event.track_phi_atETL[itrack]), singlePi_trackPtAtETL_weights[ ptBin ] )
+                    histos["track_pt_atETL_reweight_overThreshE"].Fill(event.track_pt[itrack], singlePi_trackPtAtETL_weights[ ptBin ] )
 
         ############################################################################################3
 

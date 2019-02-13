@@ -478,12 +478,14 @@ void makeComparisonPlots(TFile *singleMu, TFile *singlePi, TFile *minBias, TCanv
 
 void makeEfficiencyCurves(TFile *singleMu, TFile *singlePi, TFile *minBias, TCanvas *c0, string variable, string xTitle, string yTitle)
 {
-  TGraphAsymmErrors *g_minBias  = returnTGraphAsymm( minBias,  (variable + "_overThreshE").c_str(), variable.c_str() );
   TGraphAsymmErrors *g_singleMu = returnTGraphAsymm( singleMu, (variable + "_overThreshE").c_str(), variable.c_str() );
   TGraphAsymmErrors *g_singlePi = returnTGraphAsymm( singlePi, (variable + "_overThreshE").c_str(), variable.c_str() );
-
   compareTwoEfficiencies(c0, g_singleMu, g_singlePi, ("h_" + variable + "_energyThresholdEff").c_str(), xTitle.c_str(), "Efficiency");
-  compareThreeEfficiencies(c0, g_singleMu, g_singlePi, g_minBias, ("h_3_" + variable + "_energyThresholdEff").c_str(), xTitle.c_str(), "Efficiency");
+
+  if (variable.find("reweight")==string::npos) {
+    TGraphAsymmErrors *g_minBias  = returnTGraphAsymm( minBias,  (variable + "_overThreshE").c_str(), variable.c_str() );
+    compareThreeEfficiencies(c0, g_singleMu, g_singlePi, g_minBias, ("h_3_" + variable + "_energyThresholdEff").c_str(), xTitle.c_str(), "Efficiency");
+  }
 
 }
 
@@ -556,17 +558,17 @@ void makeReweights(TFile *singleMu, TFile *singlePi, TFile *minBias, string vari
   //cout << "h_singlePi->Integral() = " << h_singlePi->Integral() << "\th_singlePi_weighted->Integral() = " << h_singlePi_weighted->Integral() << endl;
 
   double total = 0;
-  cout << "singleMu_trackPt_weights = { ";
+  cout << "singleMu_trackPtAtETL_weights = { ";
   for (int iBin = 1; iBin < h_singleMu->GetNbinsX()+1; iBin++) {
-    cout << h_singleMu_weights->GetBinLowEdge(iBin) << ":" << h_singleMu_weights->GetBinContent(iBin) << " , ";
+    cout << iBin << ":" << h_singleMu_weights->GetBinContent(iBin) << " , ";
     total += h_singleMu_weighted->GetBinContent(iBin);
   }
   cout << "} " << "\ntotal = " << total << endl;
 
   total = 0;
-  cout << "singlePi_trackPt_weights = { ";
+  cout << "singlePi_trackPtAtETL_weights = { ";
   for (int iBin = 1; iBin < h_singlePi->GetNbinsX()+1; iBin++) {
-    cout << h_singlePi_weights->GetBinLowEdge(iBin) << ":" << h_singlePi_weights->GetBinContent(iBin) << " , ";
+    cout << iBin << ":" << h_singlePi_weights->GetBinContent(iBin) << " , ";
     total += h_singlePi_weighted->GetBinContent(iBin);
   }
   cout << "} " << "\ntotal = " << total << endl;
@@ -578,8 +580,8 @@ void makeReweights(TFile *singleMu, TFile *singlePi, TFile *minBias, string vari
 void plotCombiner()
 {
   // *** 0. Drawing options
-  string date      = "02-11-19";
-  string revisionN = "r4";
+  string date      = "02-13-19";
+  string revisionN = "r0";
   topDir = ("dpg_"+date+"/").c_str();
   TCanvas* c1 = new TCanvas("c1", "c1", 800, 800);
 
@@ -596,7 +598,8 @@ void plotCombiner()
   // *** 2. Files and trees
   TFile *f_singleMu = new TFile( ("./"+topDir+"/singleMuon_v1_" + revisionN + "_" + date + ".root").c_str(), "READ");
   TFile *f_singlePi = new TFile( ("./"+topDir+"/singlePion_v1_" + revisionN + "_" + date + ".root").c_str(), "READ");
-  TFile *f_minBias  = new TFile( ("./"+topDir+"/nuGun200PU_v1_" + revisionN + "_" + date + ".root").c_str(), "READ");
+  //TFile *f_minBias  = new TFile( ("./"+topDir+"/nuGun200PU_v1_" + revisionN + "_" + date + ".root").c_str(), "READ");
+  TFile *f_minBias  = new TFile( "./dpg_02-11-19/nuGun200PU_v1_r4_02-11-19.root", "READ");
 
 
   // *** 3. Comparison Plots
@@ -608,15 +611,19 @@ void plotCombiner()
   makeComparisonPlots(f_singleMu, f_singlePi, f_minBias, c1, "recHit_maxEnergy_withTrackBTL", "BTL Max recHit Energy (No #Delta R) [MeV]", "Event Fraction / 0.1 MeV");
   makeComparisonPlots(f_singleMu, f_singlePi, f_minBias, c1, "recHit_maxEnergy_dRpass_withTrackBTL", "BTL Max recHit Energy (#Delta R < 0.05) [MeV]", "Event Fraction / 0.1 MeV");
   makeComparisonPlots(f_singleMu, f_singlePi, f_minBias, c1, "track_pt", "Track p_{T} [GeV]", "Event Fraction / 0.1 GeV");
+  makeComparisonPlots(f_singleMu, f_singlePi, f_minBias, c1, "track_pt_atETL", "Track p_{T} at ETL [GeV]", "Event Fraction / 0.1 GeV");
 
  
   // *** 4. Efficiencies
   makeEfficiencyCurves(f_singleMu, f_singlePi, f_minBias, c1, "track_pt_atETL", "Track p_{T} (ETL-matched) [GeV]", "Efficiency");
-  makeEfficiencyCurves(f_singleMu, f_singlePi, f_minBias, c1, "track_eta_atETL", "#phi at ETL", "Efficiency");
-  makeEfficiencyCurves(f_singleMu, f_singlePi, f_minBias, c1, "track_phi_atETL", "#eta at ETL", "Efficiency");
+  makeEfficiencyCurves(f_singleMu, f_singlePi, f_minBias, c1, "track_eta_atETL", "#eta at ETL", "Efficiency");
+  makeEfficiencyCurves(f_singleMu, f_singlePi, f_minBias, c1, "track_phi_atETL", "#phi at ETL", "Efficiency");
   makeEfficiencyCurves(f_singleMu, f_singlePi, f_minBias, c1, "track_pt_atBTL", "Track p_{T} (BTL-matched) [GeV]", "Efficiency");
-  makeEfficiencyCurves(f_singleMu, f_singlePi, f_minBias, c1, "track_eta_atBTL", "#phi at BTL", "Efficiency");
-  makeEfficiencyCurves(f_singleMu, f_singlePi, f_minBias, c1, "track_phi_atBTL", "#eta at BTL", "Efficiency");
+  makeEfficiencyCurves(f_singleMu, f_singlePi, f_minBias, c1, "track_eta_atBTL", "#eta at BTL", "Efficiency");
+  makeEfficiencyCurves(f_singleMu, f_singlePi, f_minBias, c1, "track_phi_atBTL", "#phi at BTL", "Efficiency");
+  makeEfficiencyCurves(f_singleMu, f_singlePi, f_minBias, c1, "track_pt_atETL_reweight", "Track p_{T} (ETL-matched) [GeV]", "Efficiency");
+  makeEfficiencyCurves(f_singleMu, f_singlePi, f_minBias, c1, "track_eta_atETL_reweight", "#eta at ETL", "Efficiency");
+  makeEfficiencyCurves(f_singleMu, f_singlePi, f_minBias, c1, "track_phi_atETL_reweight", "#phi at ETL", "Efficiency");
 
 
   // *** 5. Occupancies
@@ -626,5 +633,5 @@ void plotCombiner()
 
 
   // *** 6. Calculate weights
-  makeReweights(f_singleMu, f_singlePi, f_minBias, "track_pt");
+  makeReweights(f_singleMu, f_singlePi, f_minBias, "track_pt_atETL");
 }

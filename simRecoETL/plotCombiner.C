@@ -526,6 +526,55 @@ void makeAndDrawOccupancyPlots(TFile *f0, TCanvas *c0, string variable, bool isE
 
 }
 
+void makeReweights(TFile *singleMu, TFile *singlePi, TFile *minBias, string variable)
+{
+  TH1D *h_singleMu = (TH1D*)singleMu->Get( variable.c_str() );
+  TH1D *h_singlePi = (TH1D*)singlePi->Get( variable.c_str() );
+  TH1D *h_minBias  = (TH1D*)minBias->Get( variable.c_str() );
+  addOverflow(h_singlePi);
+  addOverflow(h_singleMu);
+  addOverflow(h_minBias);
+
+  TH1D *h_singleMu_norm = (TH1D*)h_singleMu->Clone();
+  TH1D *h_singlePi_norm = (TH1D*)h_singlePi->Clone();
+  TH1D *h_minBias_norm  = (TH1D*)h_minBias->Clone();
+  h_singleMu_norm->Scale(1/h_singleMu->Integral());
+  h_singlePi_norm->Scale(1/h_singlePi->Integral());
+  h_minBias_norm->Scale(1/h_minBias->Integral());
+
+  TH1D* h_singleMu_weights = (TH1D*)h_minBias_norm->Clone();
+  TH1D* h_singlePi_weights = (TH1D*)h_minBias_norm->Clone();
+  h_singleMu_weights->Divide(h_singleMu_norm);
+  h_singlePi_weights->Divide(h_singlePi_norm);
+
+  TH1D* h_singleMu_weighted = (TH1D*)h_singleMu->Clone();
+  TH1D* h_singlePi_weighted = (TH1D*)h_singlePi->Clone();
+  h_singleMu_weighted->Multiply(h_singleMu_weights);
+  h_singlePi_weighted->Multiply(h_singlePi_weights);
+
+  //cout << "h_singleMu->Integral() = " << h_singleMu->Integral() << "\th_singleMu_weighted->Integral() = " << h_singleMu_weighted->Integral() << endl;
+  //cout << "h_singlePi->Integral() = " << h_singlePi->Integral() << "\th_singlePi_weighted->Integral() = " << h_singlePi_weighted->Integral() << endl;
+
+  double total = 0;
+  cout << "singleMu_trackPt_weights = { ";
+  for (int iBin = 1; iBin < h_singleMu->GetNbinsX()+1; iBin++) {
+    cout << h_singleMu_weights->GetBinLowEdge(iBin) << ":" << h_singleMu_weights->GetBinContent(iBin) << " , ";
+    total += h_singleMu_weighted->GetBinContent(iBin);
+  }
+  cout << "} " << "\ntotal = " << total << endl;
+
+  total = 0;
+  cout << "singlePi_trackPt_weights = { ";
+  for (int iBin = 1; iBin < h_singlePi->GetNbinsX()+1; iBin++) {
+    cout << h_singlePi_weights->GetBinLowEdge(iBin) << ":" << h_singlePi_weights->GetBinContent(iBin) << " , ";
+    total += h_singlePi_weighted->GetBinContent(iBin);
+  }
+  cout << "} " << "\ntotal = " << total << endl;
+      
+  
+
+}
+
 void plotCombiner()
 {
   // *** 0. Drawing options
@@ -575,4 +624,7 @@ void plotCombiner()
   makeAndDrawOccupancyPlots(f_minBias, c1, "energy", false, true, true, true);
   makeAndDrawOccupancyPlots(f_minBias, c1, "eta", true, true, false, true);
 
+
+  // *** 6. Calculate weights
+  makeReweights(f_singleMu, f_singlePi, f_minBias, "track_pt");
 }

@@ -7,8 +7,9 @@
 #include "TCanvas.h"
 #include "TLatex.h"
 
-#include "cmsStyle/tdrStyle.C"
+//#include "cmsStyle/tdrStyle.C"
 #include "cmsStyle/CMS_lumi.C"
+#include "tdrStyle/setTDRStyle.C"
 
 string topDir = "";
 
@@ -90,7 +91,7 @@ void compareTwoPlots(TCanvas* c0, TH1D *h_singleMu, TH1D *h_singlePi, string hna
 
   c0->SetLeftMargin(0.15);
   //c0->SetRightMargin(0.05);
-  //c0->SetBottomMargin(0.15);
+  c0->SetBottomMargin(0.15);
 
   c0->Print( (topDir + "/" + hname + ".png").c_str() );
 }
@@ -171,7 +172,7 @@ void compareThreePlots(TCanvas* c0, TH1D *h_singleMu, TH1D *h_singlePi, TH1D *h_
 
   c0->SetLeftMargin(0.15);
   //c0->SetRightMargin(0.05);
-  //c0->SetBottomMargin(0.15);
+  c0->SetBottomMargin(0.15);
 
   c0->Print( (topDir + "/" + hname + ".png").c_str() );
 }
@@ -187,8 +188,10 @@ void compareTwoEfficiencies(TCanvas* c0, TGraphAsymmErrors *g_singleMu, TGraphAs
 
   g_singlePi->SetLineColor(kRed);
   g_singlePi->SetLineWidth(2);
+  g_singlePi->SetMarkerStyle(0);
   g_singleMu->SetLineColor(kBlue);
   g_singleMu->SetLineWidth(2);
+  g_singleMu->SetMarkerStyle(0);
 
   g_singleMu->GetYaxis()->SetTitle( yname.c_str() );
   g_singleMu->GetXaxis()->SetTitle( xname.c_str() );
@@ -208,7 +211,7 @@ void compareTwoEfficiencies(TCanvas* c0, TGraphAsymmErrors *g_singleMu, TGraphAs
 
   c0->SetLeftMargin(0.15);
   //c0->SetRightMargin(0.05);
-  //c0->SetBottomMargin(0.15);
+  c0->SetBottomMargin(0.15);
 
   c0->Print( (topDir + "/" + hname + ".png").c_str() );
 }
@@ -224,10 +227,13 @@ void compareThreeEfficiencies(TCanvas* c0, TGraphAsymmErrors *g_singleMu, TGraph
 
   g_singlePi->SetLineColor(kRed);
   g_singlePi->SetLineWidth(2);
+  g_singlePi->SetMarkerStyle(0);
   g_singleMu->SetLineColor(kBlue);
   g_singleMu->SetLineWidth(2);
+  g_singleMu->SetMarkerStyle(0);
   g_minBias->SetLineColor(kBlack);
   g_minBias->SetLineWidth(2);
+  g_minBias->SetMarkerStyle(0);
 
   g_singleMu->GetYaxis()->SetTitle( yname.c_str() );
   g_singleMu->GetXaxis()->SetTitle( xname.c_str() );
@@ -250,7 +256,7 @@ void compareThreeEfficiencies(TCanvas* c0, TGraphAsymmErrors *g_singleMu, TGraph
 
   c0->SetLeftMargin(0.15);
   //c0->SetRightMargin(0.05);
-  //c0->SetBottomMargin(0.15);
+  c0->SetBottomMargin(0.15);
 
   c0->Print( (topDir + "/" + hname + ".png").c_str() );
 }
@@ -356,7 +362,7 @@ void makeOccupancyPlot(TCanvas* c0, TGraphAsymmErrors *g_occupancy, string hname
 
   c0->SetLeftMargin(0.15);
   //c0->SetRightMargin(0.05);
-  //c0->SetBottomMargin(0.15);
+  c0->SetBottomMargin(0.15);
 
   c0->Print( (topDir + "/" + hname + ".png").c_str() );
 
@@ -428,7 +434,7 @@ void makeOccupancyPlotAllRings(TCanvas* c0, TGraphAsymmErrors *g_r1, TGraphAsymm
 
   TLegend* leg = new TLegend();
   if (hname.find("_eta_")!=string::npos)
-    leg = new TLegend(0.30, 0.60, .50, .85);
+    leg = new TLegend(0.65, 0.60, .85, .85);
   else
     leg = new TLegend(0.30, 0.20, .50, .45);
 
@@ -451,14 +457,14 @@ void makeOccupancyPlotAllRings(TCanvas* c0, TGraphAsymmErrors *g_r1, TGraphAsymm
   ltx1.SetTextFont(62);
   ltx1.SetTextSize(0.022);
   ltx1.SetNDC();
-  if(is200PU)  ltx1.DrawLatex(0.72, 0.87, "Min Bias 200 PU");
-  else         ltx1.DrawLatex(0.72, 0.87, "Min Bias No PU");
+  //if(is200PU)  ltx1.DrawLatex(0.72, 0.87, "Min Bias 200 PU"); // BBT 02-28-19
+  //else         ltx1.DrawLatex(0.72, 0.87, "Min Bias No PU");  // BBT 02-28-19
 
   CMS_lumi( c0, 0, 0);
 
   c0->SetLeftMargin(0.15);
   //c0->SetRightMargin(0.05);
-  //c0->SetBottomMargin(0.15);
+  c0->SetBottomMargin(0.15);
 
   c0->Print( (topDir + "/" + hname + ".png").c_str() );
 
@@ -519,7 +525,7 @@ void makeAndDrawOccupancyPlots(TFile *f0, TCanvas *c0, string variable, bool isE
   TGraphAsymmErrors* recHit_occupancy_VS_var_Ring11_ETL_plusSide_200PU   = returnOccupancyCurve(f0, ("recHit_" + variable + "_allHitsRing11_ETL_plusSide").c_str(),  11, isEta, is200PU);
 
   string s_PU = is200PU ? "200PU" : "noPU";
-  string s_XTitle = isEta ? "ETL Rec Hit #eta" : "Threshold Energy [MeV]";
+  string s_XTitle = isEta ? "ETL Rec Hit |#eta|" : "Threshold Energy [MeV]";
   makeOccupancyPlot(c0, recHit_occupancy_VS_var_allRings_ETL_200PU, ("occupancy_recHit_"+variable+"_allHitsAllRings_"+s_PU+"_ETL").c_str(), s_XTitle.c_str(), "ETL Occupancy", isLogX, isLogY, is200PU);
   makeOccupancyPlot(c0, recHit_occupancy_VS_var_allRings_ETL_plusSide_200PU, ("occupancy_recHit_"+variable+"_allHitsAllRings_"+s_PU+"_ETL_plusSide").c_str(), s_XTitle.c_str(), "ETL Occupancy", isLogX, isLogY, is200PU);
 
@@ -581,23 +587,25 @@ void plotCombiner()
 {
   // *** 0. Drawing options
   string date      = "02-13-19";
+  string topDate   = "02-28-19";
   string revisionN = "r0";
-  topDir = ("dpg_"+date+"/").c_str();
+  topDir = ("dpg_"+topDate+"/").c_str();
+  string fileDir = ("dpg_"+date+"/").c_str();
   TCanvas* c1 = new TCanvas("c1", "c1", 800, 800);
 
   // *** 1. CMS Style
   setTDRStyle();
   writeExtraText = true;       // if extra text                                                
-  extraText  = "      Phase 2 Simulation";  // default extra text is "Preliminary"
+  extraText  = "       Phase-2 Simulation";  // default extra text is "Preliminary"
   //lumi_sqrtS = "Phase 2 Simulation";       // used with iPeriod = 0, e.g. for simulation-only plots (default is an empty string)
   int iPeriod = 0;    // 1=7TeV, 2=8TeV, 3=7+8TeV, 7=7+8+13TeV, 0=free form (uses lumi_sqrtS)  
-  cmsTextSize = 0.3;
-  lumiTextSize = 0.3;
-
+  cmsTextSize = 0.4;
+  lumiTextSize = 0.4;
+  
 
   // *** 2. Files and trees
-  TFile *f_singleMu = new TFile( ("./"+topDir+"/singleMuon_v1_" + revisionN + "_" + date + ".root").c_str(), "READ");
-  TFile *f_singlePi = new TFile( ("./"+topDir+"/singlePion_v1_" + revisionN + "_" + date + ".root").c_str(), "READ");
+  TFile *f_singleMu = new TFile( ("./"+fileDir+"/singleMuon_v1_" + revisionN + "_" + date + ".root").c_str(), "READ");
+  TFile *f_singlePi = new TFile( ("./"+fileDir+"/singlePion_v1_" + revisionN + "_" + date + ".root").c_str(), "READ");
   //TFile *f_minBias  = new TFile( ("./"+topDir+"/nuGun200PU_v1_" + revisionN + "_" + date + ".root").c_str(), "READ");
   TFile *f_minBias  = new TFile( "./dpg_02-11-19/nuGun200PU_v1_r4_02-11-19.root", "READ");
 
@@ -616,13 +624,13 @@ void plotCombiner()
  
   // *** 4. Efficiencies
   makeEfficiencyCurves(f_singleMu, f_singlePi, f_minBias, c1, "track_pt_atETL", "Track p_{T} (ETL-matched) [GeV]", "Efficiency");
-  makeEfficiencyCurves(f_singleMu, f_singlePi, f_minBias, c1, "track_eta_atETL", "#eta at ETL", "Efficiency");
+  makeEfficiencyCurves(f_singleMu, f_singlePi, f_minBias, c1, "track_eta_atETL", "|#eta| at ETL", "Efficiency");
   makeEfficiencyCurves(f_singleMu, f_singlePi, f_minBias, c1, "track_phi_atETL", "#phi at ETL", "Efficiency");
   makeEfficiencyCurves(f_singleMu, f_singlePi, f_minBias, c1, "track_pt_atBTL", "Track p_{T} (BTL-matched) [GeV]", "Efficiency");
-  makeEfficiencyCurves(f_singleMu, f_singlePi, f_minBias, c1, "track_eta_atBTL", "#eta at BTL", "Efficiency");
+  makeEfficiencyCurves(f_singleMu, f_singlePi, f_minBias, c1, "track_eta_atBTL", "|#eta| at BTL", "Efficiency");
   makeEfficiencyCurves(f_singleMu, f_singlePi, f_minBias, c1, "track_phi_atBTL", "#phi at BTL", "Efficiency");
   makeEfficiencyCurves(f_singleMu, f_singlePi, f_minBias, c1, "track_pt_atETL_reweight", "Track p_{T} (ETL-matched) [GeV]", "Efficiency");
-  makeEfficiencyCurves(f_singleMu, f_singlePi, f_minBias, c1, "track_eta_atETL_reweight", "#eta at ETL", "Efficiency");
+  makeEfficiencyCurves(f_singleMu, f_singlePi, f_minBias, c1, "track_eta_atETL_reweight", "|#eta| at ETL", "Efficiency");
   makeEfficiencyCurves(f_singleMu, f_singlePi, f_minBias, c1, "track_phi_atETL_reweight", "#phi at ETL", "Efficiency");
 
 

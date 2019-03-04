@@ -1,4 +1,5 @@
 *.*~
+*.jdl
 test_*
 *.tar.gz
 docker_stderror

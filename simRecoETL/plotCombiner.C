@@ -115,7 +115,13 @@ void compareThreePlots(TCanvas* c0, TH1D *h_singleMu, TH1D *h_singlePi, TH1D *h_
   h_singleMu->SetLineWidth(3);
   h_minBias->SetLineColor(kBlack);
   h_minBias->SetLineWidth(3);
-
+  
+  /*
+  if(hname.find("recHit_energy_dR05_withTrackETL")!=string::npos) {
+    h_singlePi->Rebin(2);
+    h_singleMu->Rebin(2);
+    h_minBias->Rebin(2);
+  }*/
 
   h_singleMu->GetYaxis()->SetTitle( yname.c_str() );
   h_singleMu->GetXaxis()->SetTitle( xname.c_str() );
@@ -158,8 +164,8 @@ void compareThreePlots(TCanvas* c0, TH1D *h_singleMu, TH1D *h_singlePi, TH1D *h_
 
 
   TLegend* leg = new TLegend();
-  leg = new TLegend(0.55, 0.75, .85, .85);
-  leg->SetTextSize(0.02);
+  leg = new TLegend(0.50, 0.72, .80, .85);
+  leg->SetTextSize(0.025);
   //leg->AddEntry(h_singleMu, ("Single Muon, <E> = "+s_meanE_mu+" MeV").c_str(), "l");
   //leg->AddEntry(h_singlePi, ("Single Pion, <E> = "+s_meanE_pi+" MeV").c_str(), "l");
   //leg->AddEntry(h_minBias,  ("Minimum Bias (200PU), <E> = "+s_meanE_minBias+" MeV").c_str(), "l");
@@ -239,13 +245,20 @@ void compareThreeEfficiencies(TCanvas* c0, TGraphAsymmErrors *g_singleMu, TGraph
   g_singleMu->GetXaxis()->SetTitle( xname.c_str() );
 
   g_singleMu->GetYaxis()->SetRangeUser(0.0, 1.1);
+  if (hname.find("_eta_")!=string::npos) 
+    g_singleMu->GetXaxis()->SetRangeUser(1.6, 2.9);
+  else if (hname.find("_pt_")!=string::npos) 
+    g_singleMu->GetXaxis()->SetRangeUser(0.7, 10.0);
+  else if (hname.find("_phi_")!=string::npos) 
+    g_singleMu->GetXaxis()->SetRangeUser(0.0, 3.13);
+
   g_singleMu->Draw();
   g_singlePi->Draw("same");
   g_minBias->Draw("same");
 
   TLegend* leg = new TLegend();
-  leg = new TLegend(0.25, 0.35, .45, .45);
-  leg->SetTextSize(0.02);
+  leg = new TLegend(0.55, 0.50, .75, .65);
+  leg->SetTextSize(0.025);
   leg->AddEntry(g_singleMu, "Single Muons", "l");
   leg->AddEntry(g_singlePi, "Single Pions", "l");
   leg->AddEntry(g_minBias, "Minimum Bias", "l");
@@ -379,10 +392,10 @@ void makeOccupancyPlotAllRings(TCanvas* c0, TGraphAsymmErrors *g_r1, TGraphAsymm
   if(isLogX) c0->SetLogx();
   if(isLogY) c0->SetLogy();
 
-  g_r1->Draw();
+  g_r1->Draw("al");
   g_r1->SetLineColor(kPink+10);
   g_r1->SetMarkerColor(kPink+10);
-  //g_r1->SetMarkerStyle(0);
+  //g_r1->SetMarkerStyle(1);
   g_r1->SetLineWidth(3);
   g_r2->SetLineColor(kBlue);
   g_r2->SetMarkerColor(kBlue);
@@ -434,11 +447,11 @@ void makeOccupancyPlotAllRings(TCanvas* c0, TGraphAsymmErrors *g_r1, TGraphAsymm
 
   TLegend* leg = new TLegend();
   if (hname.find("_eta_")!=string::npos)
-    leg = new TLegend(0.65, 0.60, .85, .85);
+    leg = new TLegend(0.65, 0.59, .85, .87);
   else
     leg = new TLegend(0.30, 0.20, .50, .45);
 
-  leg->SetTextSize(0.02);
+  leg->SetTextSize(0.025);
   leg->AddEntry(g_r1, "ETL Ring 1", "l");
   leg->AddEntry(g_r2, "ETL Ring 2", "l");
   leg->AddEntry(g_r3, "ETL Ring 3", "l");
@@ -586,9 +599,10 @@ void makeReweights(TFile *singleMu, TFile *singlePi, TFile *minBias, string vari
 void plotCombiner()
 {
   // *** 0. Drawing options
-  string date      = "02-13-19";
-  string topDate   = "02-28-19";
-  string revisionN = "r0";
+  string date      = "03-13-19";
+  //string topDate   = "03-12-19";
+  string topDate   = date;
+  string revisionN = "r1";
   topDir = ("dpg_"+topDate+"/").c_str();
   string fileDir = ("dpg_"+date+"/").c_str();
   TCanvas* c1 = new TCanvas("c1", "c1", 800, 800);
@@ -606,20 +620,22 @@ void plotCombiner()
   // *** 2. Files and trees
   TFile *f_singleMu = new TFile( ("./"+fileDir+"/singleMuon_v1_" + revisionN + "_" + date + ".root").c_str(), "READ");
   TFile *f_singlePi = new TFile( ("./"+fileDir+"/singlePion_v1_" + revisionN + "_" + date + ".root").c_str(), "READ");
+  TFile *f_minBias  = new TFile( ("./"+topDir+"/minBias0PU_v1_" + revisionN + "_" + date + ".root").c_str(), "READ");
   //TFile *f_minBias  = new TFile( ("./"+topDir+"/nuGun200PU_v1_" + revisionN + "_" + date + ".root").c_str(), "READ");
-  TFile *f_minBias  = new TFile( "./dpg_02-11-19/nuGun200PU_v1_r4_02-11-19.root", "READ");
+  //TFile *f_minBias  = new TFile( "./dpg_02-11-19/nuGun200PU_v1_r4_02-11-19.root", "READ");
+  //TFile *f_minBias  = new TFile( "./dpg_03-04-19/minBias0PU_v1_r0_03-04-19.root", "READ");
 
 
   // *** 3. Comparison Plots
   makeComparisonPlots(f_singleMu, f_singlePi, f_minBias, c1, "recHit_energy_dR05_withTrackBTL", "BTL #Sigma E^{#Delta R < 0.05}_{recHit} [MeV]", "Event Fraction / 1 MeV");
-  makeComparisonPlots(f_singleMu, f_singlePi, f_minBias, c1, "recHit_energy_dR05_withTrackETL", "ETL #Sigma E^{#Delta R < 0.05}_{recHit} [MeV]", "Event Fraction / 0.01 MeV");
-  makeComparisonPlots(f_singleMu, f_singlePi, f_minBias, c1, "recHit_energy_dR05_withTrackETL_fixedRange", "ETL #Sigma E^{#Delta R < 0.05}_{recHit} [MeV]", "Event Fraction / 0.1 MeV");
+  makeComparisonPlots(f_singleMu, f_singlePi, f_minBias, c1, "recHit_energy_dR05_withTrackETL", "ETL #Sigma E^{#Delta R < 0.05}_{recHit} [MeV]", "Event Fraction / 0.02 MeV");
+  makeComparisonPlots(f_singleMu, f_singlePi, f_minBias, c1, "recHit_energy_dR05_withTrackETL_fixedRange", "ETL #Sigma E^{#Delta R < 0.05}_{recHit} [MeV]", "Event Fraction / 0.025 MeV");
   makeComparisonPlots(f_singleMu, f_singlePi, f_minBias, c1, "recHit_maxEnergy_withTrackETL", "ETL Max recHit Energy (No #Delta R) [MeV]", "Event Fraction / 0.1 MeV");
   makeComparisonPlots(f_singleMu, f_singlePi, f_minBias, c1, "recHit_maxEnergy_dRpass_withTrackETL", "ETL Max recHit Energy (#Delta R < 0.05) [MeV]", "Event Fraction / 0.1 MeV");
   makeComparisonPlots(f_singleMu, f_singlePi, f_minBias, c1, "recHit_maxEnergy_withTrackBTL", "BTL Max recHit Energy (No #Delta R) [MeV]", "Event Fraction / 0.1 MeV");
   makeComparisonPlots(f_singleMu, f_singlePi, f_minBias, c1, "recHit_maxEnergy_dRpass_withTrackBTL", "BTL Max recHit Energy (#Delta R < 0.05) [MeV]", "Event Fraction / 0.1 MeV");
   makeComparisonPlots(f_singleMu, f_singlePi, f_minBias, c1, "track_pt", "Track p_{T} [GeV]", "Event Fraction / 0.1 GeV");
-  makeComparisonPlots(f_singleMu, f_singlePi, f_minBias, c1, "track_pt_atETL", "Track p_{T} at ETL [GeV]", "Event Fraction / 0.1 GeV");
+  //makeComparisonPlots(f_singleMu, f_singlePi, f_minBias, c1, "track_pt_atETL", "Track p_{T} at ETL [GeV]", "Event Fraction / 0.1 GeV");
 
  
   // *** 4. Efficiencies

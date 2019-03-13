@@ -19,9 +19,9 @@ foreach x (`seq 0 $SPLIT 49`)
     sleep 10
 end
 
-#python submitSampleToCondor.py --outputDir singleMuon_v1_$1 --inputTXTfile fileLists/singleMuon_v1.txt --layout barzflat
-#sleep 10
-#python submitSampleToCondor.py --outputDir singlePion_v1_$1 --inputTXTfile fileLists/singlePion_v1.txt --layout barzflat
+python submitSampleToCondor.py --outputDir singleMuon_v1_$1 --inputTXTfile fileLists/singleMuon_v1.txt --layout barzflat
+sleep 10
+python submitSampleToCondor.py --outputDir singlePion_v1_$1 --inputTXTfile fileLists/singlePion_v1.txt --layout barzflat
 
   
 
